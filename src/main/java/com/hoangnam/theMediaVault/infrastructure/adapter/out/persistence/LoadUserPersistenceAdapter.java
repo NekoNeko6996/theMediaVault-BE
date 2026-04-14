@@ -1,7 +1,9 @@
 package com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence;
 
 import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
+import com.hoangnam.theMediaVault.domain.model.Email;
 import com.hoangnam.theMediaVault.domain.model.User;
+import com.hoangnam.theMediaVault.domain.model.UserName;
 import com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.entity.UserEntity;
 import com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.repository.UserRepository;
 import java.util.Optional;
@@ -32,8 +34,8 @@ public class LoadUserPersistenceAdapter implements LoadUserPort{
     private User mapToDomain(UserEntity entity) {
         return User.builder()
                 .id(entity.getId())
-                .username(entity.getUsername())
-                .email(entity.getEmail())
+                .username(UserName.create(entity.getUsername()))
+                .email(Email.create(entity.getEmail()))
                 .passwordHash(entity.getPasswordHash())
                 .isActive(entity.isActive())
                 .role(entity.getRole())

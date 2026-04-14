@@ -1,6 +1,7 @@
 package com.hoangnam.theMediaVault.domain.model;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Value;
 
@@ -9,8 +10,8 @@ import lombok.Value;
 public class User {
 
     String id;  // UUID
-    String username;
-    String email;
+    UserName username;
+    Email email;
     
     String passwordHash;
     
@@ -44,6 +45,23 @@ public class User {
     public boolean canUpload(long fileSize) {
         return this.storageLimit > (fileSize + this.usedStorage);
     }
+    
+    
+    public static User create(String username, String email, String passwordHash, long defaultStorageLimit) {
+        return User.builder()
+                .id(UUID.randomUUID().toString())
+                .username(UserName.create(username))
+                .email(Email.create(email))
+                .passwordHash(passwordHash)
+                .role(UserRole.USER) // Mặc định là USER
+                .isActive(false)     // Chờ xác thực email
+                .storageLimit(defaultStorageLimit)
+                .usedStorage(0L)
+                .createAt(LocalDateTime.now())
+                .updateAt(LocalDateTime.now())
+                .build();
+    }
+    
     
     /**
      * 

@@ -22,7 +22,7 @@ public class SecurityUser implements UserDetails {
     public String getPassword() { return user.getPasswordHash(); }
 
     @Override
-    public String getUsername() { return user.getUsername(); }
+    public String getUsername() { return user.getUsername().getValue(); }
 
     @Override
     public boolean isEnabled() { return user.isActive(); }

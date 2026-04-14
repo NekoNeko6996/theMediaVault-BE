@@ -21,8 +21,8 @@ public class UserResponse {
     public static UserResponse fromDomain(User user) {
         return UserResponse.builder()
                 .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
+                .username(user.getUsername().getValue())
+                .email(user.getEmail().getValue())
                 .role(user.getRole().name())
                 .storageLimit(user.getStorageLimit())
                 .usedStorage(user.getUsedStorage())
