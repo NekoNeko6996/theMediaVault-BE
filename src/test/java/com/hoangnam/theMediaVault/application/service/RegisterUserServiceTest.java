@@ -4,6 +4,7 @@ import com.hoangnam.theMediaVault.application.port.out.*;
 import com.hoangnam.theMediaVault.domain.exception.DomainException;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.dto.AuthenticationResponse;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.dto.CreateUserRequest;
+import java.util.Date;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,37 +23,45 @@ class RegisterUserServiceTest {
     @Mock private SaveUserPort saveUserPort;
     @Mock private CheckUserPort checkUserPort;
     @Mock private PasswordEncoderPort passwordEncodePort;
-    @Mock private TokenGeneratorPort tokenGeneratorPort;
-    @Mock private GetTokenExpirationPort getTokenExpiration;
+    @Mock private AuthTokenPort authTokenPort;
 
     @InjectMocks
     private RegisterUserService registerUserService; // Tự động inject các Mock vào đây
 
     @Test
-    @DisplayName("Đăng ký thành công - Luồng chính")
-    void execute_ShouldReturnResponse_WhenDataIsValid() {
-        // Arrange (Chuẩn bị)
-        CreateUserRequest request = new CreateUserRequest("hoangnam", "test@gmail.com", "password123");
-        
-        when(checkUserPort.existsByEmail(anyString())).thenReturn(false);
-        when(checkUserPort.existsByUserName(anyString())).thenReturn(false);
-        when(passwordEncodePort.encode(anyString())).thenReturn("hashed_password");
-        when(tokenGeneratorPort.generateToken(anyString())).thenReturn("mocked_jwt_token");
-        when(getTokenExpiration.milisecond()).thenReturn(3600000L); // 1 giờ
+@DisplayName("Đăng ký thành công - Luồng chính")
+void execute_ShouldReturnResponse_WhenDataIsValid() {
+    // 1. Arrange (Chuẩn bị)
+    String mockToken = "mocked_jwt_token";
+    long expirationTimeMillis = 3600000L; // 1 giờ
+    Date mockExpirationDate = new Date(System.currentTimeMillis() + expirationTimeMillis);
+    
+    CreateUserRequest request = new CreateUserRequest("hoangnam", "test@gmail.com", "password123");
+    
+    // Giả lập các Port cũ
+    when(checkUserPort.existsByEmail(anyString())).thenReturn(false);
+    when(checkUserPort.existsByUserName(anyString())).thenReturn(false);
+    when(passwordEncodePort.encode(anyString())).thenReturn("hashed_password");
+    
+    // Cập nhật Mock cho AuthTokenPort mới
+    when(authTokenPort.generateToken(anyString())).thenReturn(mockToken);
+    
+    // Mock hàm getExpiration nhận vào token và trả về đối tượng Date
+    when(authTokenPort.getExpiration(mockToken)).thenReturn(mockExpirationDate);
 
-        // Act (Hành động)
-        AuthenticationResponse response = registerUserService.execute(request);
+    // 2. Act (Hành động)
+    AuthenticationResponse response = registerUserService.execute(request);
 
-        // Assert (Kiểm chứng)
-        assertNotNull(response);
-        assertEquals("mocked_jwt_token", response.getAccessToken());
-        assertEquals("Bearer", response.getTokenType());
-        assertEquals(3600000L, response.getExpiresIn());
+    // 3. Assert (Kiểm chứng)
+    assertNotNull(response);
+    assertEquals(mockToken, response.getAccessToken());
+    assertEquals("Bearer", response.getTokenType());
 
-        // Verify (Xác nhận các Port được gọi đúng)
-        verify(saveUserPort, times(1)).save(any()); 
-        verify(passwordEncodePort).encode("password123");
-    }
+    // 4. Verify
+    verify(saveUserPort, times(1)).save(any()); 
+    verify(passwordEncodePort).encode("password123");
+    verify(authTokenPort).getExpiration(mockToken); // Xác nhận hàm getExpiration đã được gọi
+}
 
     @Test
     @DisplayName("Thất bại khi Email đã tồn tại")

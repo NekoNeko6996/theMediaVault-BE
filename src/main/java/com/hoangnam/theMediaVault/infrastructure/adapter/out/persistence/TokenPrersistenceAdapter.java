@@ -1,7 +1,6 @@
 package com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence;
 
-import com.hoangnam.theMediaVault.application.port.out.GetTokenExpirationPort;
-import com.hoangnam.theMediaVault.application.port.out.TokenGeneratorPort;
+import com.hoangnam.theMediaVault.application.port.out.AuthTokenPort;
 import com.hoangnam.theMediaVault.infrastructure.service.JWTService;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class TokenPrersistenceAdapter implements TokenGeneratorPort, GetTokenExpirationPort {
+public class TokenPrersistenceAdapter implements AuthTokenPort {
     
     private final JWTService jwtService;
     
@@ -23,8 +22,13 @@ public class TokenPrersistenceAdapter implements TokenGeneratorPort, GetTokenExp
     }
 
     @Override
-    public long milisecond() {
-        return expiration;
+    public String getSubject(String token) {
+        return jwtService.extracUsername(token);
+    }
+
+    @Override
+    public Date getExpiration(String token) {
+       return jwtService.extractExpiration(token);
     }
 
 }

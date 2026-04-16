@@ -11,5 +11,5 @@ import lombok.Value;
 public class AuthenticationResponse {
     String accessToken;
     String tokenType; // Thường là "Bearer"
-    long expiresIn;   // (Tùy chọn) Thời gian hết hạn tính mili second
+    Date expiresIn;
 }

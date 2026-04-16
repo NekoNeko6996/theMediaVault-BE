@@ -9,4 +9,5 @@ import java.util.Optional;
  */
 public interface LoadUserPort {
     Optional<User> findById(String id);
+    Optional<User> findByUsername(String username);
 }

@@ -62,6 +62,9 @@ public class User {
                 .build();
     }
     
+    public User withLogin() {
+        return this.toBuilder().lastLoginAt(LocalDateTime.now()).build();
+    }
     
     /**
      * 
