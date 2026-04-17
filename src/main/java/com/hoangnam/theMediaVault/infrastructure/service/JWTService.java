@@ -1,5 +1,6 @@
 package com.hoangnam.theMediaVault.infrastructure.service;
 
+import com.hoangnam.theMediaVault.infrastructure.security.model.CustomUserDetail;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -10,7 +11,6 @@ import java.util.Map;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,15 +19,15 @@ public class JWTService {
     @Value("${jwt.secret}")
     private String secret;
 
-    public String generateToken(String username, long expiration) {
+    public String generateToken(String userID, long expiration) {
         Map<String, Object> claims = new HashMap();
-        return createToken(claims, username, expiration);
+        return createToken(claims, userID, expiration);
     }
 
-    private String createToken(Map<String, Object> claims, String username, long expiration) {
+    private String createToken(Map<String, Object> claims, String userID, long expiration) {
         return Jwts.builder()
                 .claims(claims)
-                .subject(username)
+                .subject(userID)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignKey())
@@ -39,7 +39,7 @@ public class JWTService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String extracUsername(String token) {
+    public String extractSubject(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -47,13 +47,13 @@ public class JWTService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpiredOrInvalid(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    public Boolean validateToken(String token, UserDetails user) {
-        final String username = extractClaim(token, Claims::getSubject);
-        return (username.equals(user.getUsername()) && !isTokenExpired(token));
+    public Boolean validateToken(String token, CustomUserDetail user) {
+        final String userID = extractSubject(token);
+        return (userID.equals(user.getDomainUser().getId()) && !isTokenExpiredOrInvalid(token));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

@@ -1,12 +1,12 @@
 package com.hoangnam.theMediaVault.application.port.in;
 
-import com.hoangnam.theMediaVault.infrastructure.adapter.in.dto.AuthenticationResponse;
-import com.hoangnam.theMediaVault.infrastructure.adapter.in.dto.LoginRequest;
+import com.hoangnam.theMediaVault.application.port.in.dto.out.AuthenticatedIdentity;
+import com.hoangnam.theMediaVault.application.port.in.dto.in.LoginCommand;
 
 /**
  *
  * 
  */
 public interface LoginUserUseCase {
-    AuthenticationResponse execute(LoginRequest request);
+    AuthenticatedIdentity execute(LoginCommand comand);
 }

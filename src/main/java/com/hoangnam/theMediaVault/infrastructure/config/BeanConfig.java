@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.hoangnam.theMediaVault.application.port.in.RegisterUserUseCase;
-import com.hoangnam.theMediaVault.application.port.out.AuthTokenPort;
 import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
 import com.hoangnam.theMediaVault.application.port.out.PasswordEncoderPort;
 import com.hoangnam.theMediaVault.application.service.LoginUserService;
@@ -20,20 +19,18 @@ public class BeanConfig {
     public RegisterUserUseCase createUserUseCase(
             SaveUserPort saveUserPort, 
             CheckUserPort checkUserPort,
-            PasswordEncoderPort passwordEncoderPort,
-            AuthTokenPort authTokenPort) 
+            PasswordEncoderPort passwordEncoderPort) 
     {
-        return new RegisterUserService(saveUserPort, checkUserPort, passwordEncoderPort, authTokenPort);
+        return new RegisterUserService(saveUserPort, checkUserPort, passwordEncoderPort);
     }
     
     @Bean
     public LoginUserUseCase loginUserUseCase(
             LoadUserPort loadUserPort,
-            AuthTokenPort authTokenPort,
             PasswordEncoderPort passwordEncoderPort,
             SaveUserPort saveUserPort) 
     {
-        return new  LoginUserService(loadUserPort, authTokenPort, passwordEncoderPort, saveUserPort);
+        return new  LoginUserService(loadUserPort, passwordEncoderPort, saveUserPort);
     }
     
     @Bean

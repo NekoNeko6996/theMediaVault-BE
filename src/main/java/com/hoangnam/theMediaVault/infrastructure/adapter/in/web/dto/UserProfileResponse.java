@@ -1,4 +1,4 @@
-package com.hoangnam.theMediaVault.infrastructure.adapter.in.dto;
+package com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto;
 
 import com.hoangnam.theMediaVault.domain.model.User;
 import lombok.Builder;
@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Value
 @Builder
-public class UserResponse {
+public class UserProfileResponse {
     String id;
     String username;
     String email;
@@ -18,8 +18,8 @@ public class UserResponse {
     LocalDateTime createAt;
 
     // Static factory method để chuyển đổi từ Domain Model sang DTO
-    public static UserResponse fromDomain(User user) {
-        return UserResponse.builder()
+    public static UserProfileResponse fromDomain(User user) {
+        return UserProfileResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername().getValue())
                 .email(user.getEmail().getValue())
