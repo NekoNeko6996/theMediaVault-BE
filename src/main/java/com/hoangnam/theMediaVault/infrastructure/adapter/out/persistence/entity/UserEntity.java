@@ -1,61 +1,66 @@
 package com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.entity;
 
 import com.hoangnam.theMediaVault.domain.model.UserRole;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-@Entity
-@Table(name = "users")
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "users")
 public class UserEntity {
 
     @Id
-    private String id;  // UUID
-    
-    @Column(nullable = false, unique = true, length = 50)
-    String username;
-    
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(length = 36, nullable = false, updatable = false)
+    private String id;
+
+    @Column(nullable = false, length = 50, unique = true)
+    private String username;
+
     @Column(nullable = false, unique = true)
-    String email;
-    
+    private String email;
+
     @Column(name = "password_hash", nullable = false)
-    String passwordHash;
-    
+    private String passwordHash;
+
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
-    boolean isActive;
-    
+    private boolean isActive = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    UserRole role;
-    
+    private UserRole role;
+
     @Column(name = "email_verified_at")
-    LocalDateTime emailVerifiedAt;
-    
+    private LocalDateTime emailVerifiedAt;
+
+    @Builder.Default
     @Column(name = "storage_limit", nullable = false)
-    long storageLimit; // bytes
+    private Long storageLimit = 5368709120L;
+
+    @Builder.Default
     @Column(name = "used_storage", nullable = false)
-    long usedStorage;  // bytes
-            
+    private Long usedStorage = 0L;
+
+    @CreationTimestamp
     @Column(name = "create_at", nullable = false, updatable = false)
-    LocalDateTime createAt;
-    @Column(name = "update_at")
-    LocalDateTime updateAt;
+    private LocalDateTime createAt;
+
+    @UpdateTimestamp
+    @Column(name = "update_at", nullable = false)
+    private LocalDateTime updateAt;
+
     @Column(name = "last_login_at")
-    LocalDateTime lastLoginAt;
+    private LocalDateTime lastLoginAt;
+
     @Column(name = "deleted_at")
-    LocalDateTime deletedAt;
+    private LocalDateTime deletedAt;
 }

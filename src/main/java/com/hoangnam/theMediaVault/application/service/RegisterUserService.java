@@ -8,8 +8,8 @@ import com.hoangnam.theMediaVault.application.port.in.dto.in.RegisterCommand;
 import lombok.RequiredArgsConstructor;
 import com.hoangnam.theMediaVault.application.port.in.RegisterUserUseCase;
 import com.hoangnam.theMediaVault.application.port.in.dto.out.AuthenticatedIdentity;
-import org.springframework.transaction.annotation.Transactional;
 import com.hoangnam.theMediaVault.application.port.out.PasswordEncoderPort;
+import jakarta.transaction.Transactional;
 
 @RequiredArgsConstructor
 public class RegisterUserService implements RegisterUserUseCase {
