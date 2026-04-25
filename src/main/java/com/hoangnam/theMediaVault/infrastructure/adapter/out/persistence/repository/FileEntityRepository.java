@@ -24,8 +24,8 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
     @Query("SELECT COUNT(f) > 0 FROM FileEntity f WHERE f.id = :fileId AND f.owner.id = :userId")
     boolean isOwner(String fileId, String userId);
     
-    @Query("SELECT f FROM FileEntity f WHERE (:parentId IS NULL AND f.parent.id IS NULL OR f.parent.id = :parentId)")
-    List<FileEntity> findByParentId(String parentId);
+    @Query("SELECT f FROM FileEntity f WHERE (:parentId IS NULL AND f.parent.id IS NULL OR f.parent.id = :parentId) AND f.owner.id = :ownerId AND f.isTrashed = false")
+    List<FileEntity> findByParentAndOwnerId(String parentId, String ownerId);
     
     void deleteByIdIn(List<String> ids);
     

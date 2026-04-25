@@ -35,7 +35,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
             try {
                 userID = jwtService.extractSubject(token);
             } 
-            catch(ExpiredJwtException e) {
+            catch(Exception e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write(e.getMessage());
                 return;

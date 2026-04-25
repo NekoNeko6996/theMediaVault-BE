@@ -5,6 +5,8 @@ import com.hoangnam.theMediaVault.application.port.in.RegisterUserUseCase;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.AuthenticatedIdentity;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.LoginCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.RegisterCommand;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.LoginRequest;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.RegisterRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.AuthenticatedResponse;
 import com.hoangnam.theMediaVault.infrastructure.service.JWTService;
 import java.util.Date;
@@ -34,8 +36,13 @@ public class AuthController {
     
     
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterCommand request) {
-        AuthenticatedIdentity identity = registerUserUseCase.execute(request);
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        AuthenticatedIdentity identity = registerUserUseCase.execute(
+                new RegisterCommand(
+                        request.getUsername(), 
+                        request.getEmail(), 
+                        request.getPassword()
+                ));
         
         // tạo token
         String token = jwtService.generateToken(identity.getUser().getId(), expirationTime);
@@ -45,8 +52,8 @@ public class AuthController {
     }
     
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginCommand request) {
-        AuthenticatedIdentity identity = loginUserUseCase.execute(request);
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        AuthenticatedIdentity identity = loginUserUseCase.execute(new LoginCommand(request.getUsername(), request.getPassword()));
         
         // tạo token
         String token = jwtService.generateToken(identity.getUser().getId(), expirationTime);

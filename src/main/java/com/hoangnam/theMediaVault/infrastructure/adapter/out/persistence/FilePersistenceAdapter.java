@@ -49,8 +49,8 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     }
 
     @Override
-    public List<File> findByParentId(String parentId, String ownerId) {
-        return fileEntityRepository.findByParentId(parentId).stream().map(fileMapper::toDomain).collect(Collectors.toList());
+    public List<File> findByParentAndOwnerId(String parentId, String ownerId) {
+        return fileEntityRepository.findByParentAndOwnerId(parentId, ownerId).stream().map(fileMapper::toDomain).collect(Collectors.toList());
     }
 
     @Override

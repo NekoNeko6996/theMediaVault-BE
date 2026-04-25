@@ -6,7 +6,6 @@ import lombok.Value;
 @Value
 @AllArgsConstructor
 public class CreateFolderRequest {
-    String ownerId;
     String parentId;
     String folderName;
 }

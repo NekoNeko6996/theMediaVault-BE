@@ -1,6 +1,7 @@
 package com.hoangnam.theMediaVault.infrastructure.config;
 
 import com.hoangnam.theMediaVault.application.port.in.CreateFolderUseCase;
+import com.hoangnam.theMediaVault.application.port.in.GetFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.LoginUserUseCase;
 import com.hoangnam.theMediaVault.application.port.in.MoveAllToTrashUseCase;
 import com.hoangnam.theMediaVault.application.port.out.CheckUserPort;
@@ -16,6 +17,7 @@ import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
 import com.hoangnam.theMediaVault.application.port.out.PasswordEncoderPort;
 import com.hoangnam.theMediaVault.application.port.out.StoragePort;
 import com.hoangnam.theMediaVault.application.service.CreateFolderService;
+import com.hoangnam.theMediaVault.application.service.GetFilesService;
 import com.hoangnam.theMediaVault.application.service.LoginUserService;
 import com.hoangnam.theMediaVault.application.service.MoveToTrashService;
 import com.hoangnam.theMediaVault.application.service.UploadFilesService;
@@ -43,9 +45,15 @@ public class BeanConfig {
         return new UploadFilesService(loadUserPort, filePersistencePort, storagePort);
     } 
     
-    @Bean MoveAllToTrashUseCase moveAllToTrashUseCase(FilePersistencePort filePresistencePort, LoadUserPort loadUserPort) {
+    @Bean 
+    public MoveAllToTrashUseCase moveAllToTrashUseCase(FilePersistencePort filePresistencePort, LoadUserPort loadUserPort) {
         return new MoveToTrashService(filePresistencePort, loadUserPort);
     } 
+    
+    @Bean
+    public GetFilesUseCase getFilesUseCase(FilePersistencePort filePersistencePort, LoadUserPort loadUserPort) {
+        return new GetFilesService(filePersistencePort, loadUserPort);
+    }
     
     @Bean
     public PasswordEncoderPort passwordEncoderPort() {
