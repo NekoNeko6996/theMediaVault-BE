@@ -1,4 +1,4 @@
-package com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto;
+package com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response;
 
 import com.hoangnam.theMediaVault.domain.model.User;
 import lombok.Builder;

@@ -4,7 +4,9 @@ import com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.entity.
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -24,4 +26,28 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
     
     @Query("SELECT f FROM FileEntity f WHERE (:parentId IS NULL AND f.parent.id IS NULL OR f.parent.id = :parentId)")
     List<FileEntity> findByParentId(String parentId);
+    
+    void deleteByIdIn(List<String> ids);
+    
+    /**
+     * Tạo 1 bảng tạm -> đưa ids gốc(các parent) vào bảng tạm trước -> đệ quy tìm con, cháu, chắt đến khi không còn rồi đưa hết vào bảng tạm này
+     * Sau đó duyệt trên bản tạm này rồi set trashed = 1 và at = now
+     * 
+     * @param fileIds 
+     */
+    @Query(value = """
+                   WITH RECURSIVE FileTree AS (
+                        SELECT id FROM files WHERE id IN :fileIds
+                        UNION ALL 
+                        SELECT f.id FROM files f
+                        INNER JOIN FileTree ft ON f.parent_id = ft.id
+                   )
+                   SELECT id FROM FileTree
+                   """, nativeQuery = true)
+    List<String> findAllChildIds(@Param("fileIds") List<String> fileIds);
+            
+    
+    @Modifying
+    @Query(value = "UPDATE FileEntity f SET f.isTrashed = true, f.trashedAt = CURRENT_TIMESTAMP WHERE f.id IN :ids")
+    void moveAllToTrash(@Param("ids") List<String> ids);
 }

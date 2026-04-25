@@ -1,8 +1,8 @@
 package com.hoangnam.theMediaVault.application.service;
 
 import com.hoangnam.theMediaVault.application.port.in.CreateFolderUseCase;
-import com.hoangnam.theMediaVault.application.port.in.dto.in.CreateFolderCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.out.CreateFolderResult;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.CreateFolderCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.CreateFolderResult;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
 import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
 import com.hoangnam.theMediaVault.application.port.out.StoragePort;
@@ -23,6 +23,7 @@ public class CreateFolderService implements CreateFolderUseCase {
     @Override
     @Transactional
     public CreateFolderResult execute(CreateFolderCommand command) {
+        command.validate();
         User owner = LoadUserPort.findById(command.getOwnerId()).orElseThrow(() -> new DomainException("User not found."));
         
         File parent = null;

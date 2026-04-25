@@ -1,4 +1,4 @@
-package com.hoangnam.theMediaVault.application.port.in.dto.out;
+package com.hoangnam.theMediaVault.application.port.in.dto.result;
 
 import java.util.List;
 import lombok.AllArgsConstructor;

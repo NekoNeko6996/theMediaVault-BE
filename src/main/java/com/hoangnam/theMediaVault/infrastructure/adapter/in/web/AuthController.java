@@ -2,10 +2,10 @@ package com.hoangnam.theMediaVault.infrastructure.adapter.in.web;
 
 import com.hoangnam.theMediaVault.application.port.in.LoginUserUseCase;
 import com.hoangnam.theMediaVault.application.port.in.RegisterUserUseCase;
-import com.hoangnam.theMediaVault.application.port.in.dto.out.AuthenticatedIdentity;
-import com.hoangnam.theMediaVault.application.port.in.dto.in.LoginCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.in.RegisterCommand;
-import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.AuthenticatedResponse;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.AuthenticatedIdentity;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.LoginCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.RegisterCommand;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.AuthenticatedResponse;
 import com.hoangnam.theMediaVault.infrastructure.service.JWTService;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;

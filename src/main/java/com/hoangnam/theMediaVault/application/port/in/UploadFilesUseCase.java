@@ -1,7 +1,7 @@
 package com.hoangnam.theMediaVault.application.port.in;
 
-import com.hoangnam.theMediaVault.application.port.in.dto.in.UploadFilesCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.out.FailedFileUploadsResult;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.UploadFilesCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedFileUploadsResult;
 
 
 /**

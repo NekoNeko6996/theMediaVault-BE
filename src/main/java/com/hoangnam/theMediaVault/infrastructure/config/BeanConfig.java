@@ -2,6 +2,7 @@ package com.hoangnam.theMediaVault.infrastructure.config;
 
 import com.hoangnam.theMediaVault.application.port.in.CreateFolderUseCase;
 import com.hoangnam.theMediaVault.application.port.in.LoginUserUseCase;
+import com.hoangnam.theMediaVault.application.port.in.MoveAllToTrashUseCase;
 import com.hoangnam.theMediaVault.application.port.out.CheckUserPort;
 import com.hoangnam.theMediaVault.application.port.out.SaveUserPort;
 import com.hoangnam.theMediaVault.application.service.RegisterUserService;
@@ -16,6 +17,7 @@ import com.hoangnam.theMediaVault.application.port.out.PasswordEncoderPort;
 import com.hoangnam.theMediaVault.application.port.out.StoragePort;
 import com.hoangnam.theMediaVault.application.service.CreateFolderService;
 import com.hoangnam.theMediaVault.application.service.LoginUserService;
+import com.hoangnam.theMediaVault.application.service.MoveToTrashService;
 import com.hoangnam.theMediaVault.application.service.UploadFilesService;
 
 @Configuration
@@ -39,6 +41,10 @@ public class BeanConfig {
     @Bean
     public UploadFilesUseCase uploadFilesUseCase(LoadUserPort loadUserPort, FilePersistencePort filePersistencePort, StoragePort storagePort) {
         return new UploadFilesService(loadUserPort, filePersistencePort, storagePort);
+    } 
+    
+    @Bean MoveAllToTrashUseCase moveAllToTrashUseCase(FilePersistencePort filePresistencePort, LoadUserPort loadUserPort) {
+        return new MoveToTrashService(filePresistencePort, loadUserPort);
     } 
     
     @Bean

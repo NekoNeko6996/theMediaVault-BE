@@ -53,4 +53,12 @@ public class FilePersistenceAdapter implements FilePersistencePort {
         return fileEntityRepository.findByParentId(parentId).stream().map(fileMapper::toDomain).collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional
+    public void moveAllToTrash(List<String> fileIds) {
+        List<String> ids = fileEntityRepository.findAllChildIds(fileIds);
+        
+        if(ids != null && !ids.isEmpty()) fileEntityRepository.moveAllToTrash(ids);
+    }
+
 }

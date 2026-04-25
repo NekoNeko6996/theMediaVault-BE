@@ -1,8 +1,8 @@
 package com.hoangnam.theMediaVault.application.service;
 
 import com.hoangnam.theMediaVault.application.port.in.GetUserProfileUseCase;
-import com.hoangnam.theMediaVault.application.port.in.dto.in.GetUserProfileQuery;
-import com.hoangnam.theMediaVault.application.port.in.dto.out.UserProfileResult;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.GetUserProfileQuery;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.UserProfileResult;
 import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
 import com.hoangnam.theMediaVault.domain.model.User;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,7 @@ public class GetUserProfileService implements GetUserProfileUseCase {
 
     @Override
     public UserProfileResult execute(GetUserProfileQuery query) {
+        query.validate();
         
         // 1. Gọi Adapter thông qua Port
         User user = loadUserPort.findById(query.getId()).orElseThrow(() -> new RuntimeException("User not found"));

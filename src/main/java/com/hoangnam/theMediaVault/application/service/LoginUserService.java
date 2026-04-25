@@ -6,8 +6,8 @@ import com.hoangnam.theMediaVault.application.port.out.PasswordEncoderPort;
 import com.hoangnam.theMediaVault.application.port.out.SaveUserPort;
 import com.hoangnam.theMediaVault.domain.exception.DomainException;
 import com.hoangnam.theMediaVault.domain.model.User;
-import com.hoangnam.theMediaVault.application.port.in.dto.out.AuthenticatedIdentity;
-import com.hoangnam.theMediaVault.application.port.in.dto.in.LoginCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.AuthenticatedIdentity;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.LoginCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +21,12 @@ public class LoginUserService implements LoginUserUseCase {
 
     @Override
     @Transactional
-    public AuthenticatedIdentity execute(LoginCommand request) {
-        User user = loadUserPort.findByUsername(request.getUsername()).orElseThrow(() -> new DomainException("Invalid username or password."));
+    public AuthenticatedIdentity execute(LoginCommand command) {
+        command.validate();
         
-        if (!passwordEncoderPort.matches(request.getPassword(), user.getPasswordHash())) {
+        User user = loadUserPort.findByUsername(command.getUsername()).orElseThrow(() -> new DomainException("Invalid username or password."));
+        
+        if (!passwordEncoderPort.matches(command.getPassword(), user.getPasswordHash())) {
             throw new DomainException("Invalid username or password.");
         }
 

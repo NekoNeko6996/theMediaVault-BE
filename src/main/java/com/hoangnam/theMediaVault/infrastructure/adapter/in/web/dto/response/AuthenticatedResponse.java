@@ -1,4 +1,4 @@
-package com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto;
+package com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response;
 
 import java.util.Date;
 import lombok.Builder;

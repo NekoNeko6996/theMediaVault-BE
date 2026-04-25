@@ -1,17 +1,22 @@
 package com.hoangnam.theMediaVault.infrastructure.adapter.in.web;
 
 import com.hoangnam.theMediaVault.application.port.in.CreateFolderUseCase;
+import com.hoangnam.theMediaVault.application.port.in.MoveAllToTrashUseCase;
 import com.hoangnam.theMediaVault.application.port.in.UploadFilesUseCase;
-import com.hoangnam.theMediaVault.application.port.in.dto.in.CreateFolderCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.in.UploadFilesCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.out.CreateFolderResult;
-import com.hoangnam.theMediaVault.application.port.in.dto.out.FailedFileUploadsResult;
-import java.io.IOException;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.CreateFolderCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.MoveAllToTrashCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.UploadFilesCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.CreateFolderResult;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedFileUploadsResult;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedMoveAllToTrashResult;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.CreateFolderRequest;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.MoveToTrashRequest;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,10 +31,18 @@ public class FIleController {
     
     private final CreateFolderUseCase createFolderUseCase;
     private final UploadFilesUseCase uploadFilesUseCase;
+    private final MoveAllToTrashUseCase moveAllToTrashUseCase;
 
     @PostMapping("/create/foler")
-    public ResponseEntity<?> createFoler(@RequestBody CreateFolderCommand request) {
-        CreateFolderResult result = createFolderUseCase.execute(request);
+    public ResponseEntity<?> createFoler(@Validated @RequestBody CreateFolderRequest request) {
+        
+        CreateFolderCommand command = CreateFolderCommand.builder()
+                .folderName(request.getFolderName())
+                .ownerId(request.getOwnerId())
+                .parentId(request.getParentId())
+                .build();
+        
+        CreateFolderResult result = createFolderUseCase.execute(command);
         
         return new ResponseEntity(result, HttpStatus.CREATED);
     }
@@ -69,7 +82,7 @@ public class FIleController {
             UploadFilesCommand command = UploadFilesCommand.builder()
                     .items(items)
                     .parentId(folderId)
-                    .userId(userId)
+                    .ownerId(userId)
                     .build();
             
             FailedFileUploadsResult result = uploadFilesUseCase.execute(command);
@@ -80,4 +93,19 @@ public class FIleController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    
+    
+    @PostMapping("/drop/files")
+    public ResponseEntity<?> moveFilesToTrash(@Validated @RequestBody MoveToTrashRequest request) {
+        
+        FailedMoveAllToTrashResult result = moveAllToTrashUseCase.execute(
+                MoveAllToTrashCommand.builder()
+                .ownerId(request.ownerId)
+                .fileIds(request.fileIds)
+                .build()
+        );
+        
+        return ResponseEntity.ok(result);
+    }
+    
 }

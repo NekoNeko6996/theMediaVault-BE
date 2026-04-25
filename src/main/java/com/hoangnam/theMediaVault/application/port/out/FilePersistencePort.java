@@ -18,4 +18,6 @@ public interface FilePersistencePort {
     boolean isOwner(String fileId, String userId);
     
     List<File> findByParentId(String parentId, String ownerId);
+    
+    void moveAllToTrash(List<String> fileIds);
 }

@@ -1,7 +1,7 @@
 package com.hoangnam.theMediaVault.application.port.in;
 
-import com.hoangnam.theMediaVault.application.port.in.dto.in.GetUserProfileQuery;
-import com.hoangnam.theMediaVault.application.port.in.dto.out.UserProfileResult;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.GetUserProfileQuery;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.UserProfileResult;
 
 /**
  *

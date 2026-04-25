@@ -1,7 +1,7 @@
 package com.hoangnam.theMediaVault.application.service;
 
-import com.hoangnam.theMediaVault.application.port.in.dto.in.UploadFilesCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.out.FailedFileUploadsResult;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.UploadFilesCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedFileUploadsResult;
 import com.hoangnam.theMediaVault.application.port.in.UploadFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
 import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
@@ -27,7 +27,7 @@ public class UploadFilesService implements UploadFilesUseCase {
     public FailedFileUploadsResult execute(UploadFilesCommand command) {
         command.validate();
 
-        User owner = loadUserPort.findById(command.getUserId()).orElseThrow(() -> new DomainException("User not found."));
+        User owner = loadUserPort.findById(command.getOwnerId()).orElseThrow(() -> new DomainException("User not found."));
 
         String normalizedParentId = (command.getParentId() == null || command.getParentId().trim().isEmpty()) ? null : command.getParentId();
         File parent = null;

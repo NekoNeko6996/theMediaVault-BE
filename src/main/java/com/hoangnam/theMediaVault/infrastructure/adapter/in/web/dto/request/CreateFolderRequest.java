@@ -1,14 +1,11 @@
-package com.hoangnam.theMediaVault.application.port.in.dto.in;
+package com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Value;
 
-
 @Value
-@Builder
 @AllArgsConstructor
-public class CreateFolderCommand {
+public class CreateFolderRequest {
     String ownerId;
     String parentId;
     String folderName;
