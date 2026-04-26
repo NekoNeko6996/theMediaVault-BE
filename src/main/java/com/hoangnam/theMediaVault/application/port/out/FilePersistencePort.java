@@ -15,9 +15,11 @@ public interface FilePersistencePort {
     Optional<File> findById(String id);
     
     boolean findByNameAndParentAndOwner(String name, String parentId, String ownerId);
-    boolean isOwner(String fileId, String userId);
+    boolean isOwner(String fileId, String ownerId);
     
     List<File> findByParentAndOwnerId(String parentId, String ownerId);
     
     void moveAllToTrash(List<String> fileIds);
+    
+    void rename(String fileId, String newName);
 }

@@ -50,4 +50,8 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
     @Modifying
     @Query(value = "UPDATE FileEntity f SET f.isTrashed = true, f.trashedAt = CURRENT_TIMESTAMP WHERE f.id IN :ids")
     void moveAllToTrash(@Param("ids") List<String> ids);
+    
+    @Modifying
+    @Query(value = "UPDATE FileEntity f SET f.name = :newName WHERE f.id = :fileId")
+    void rename(String fileId, String newName);
 }

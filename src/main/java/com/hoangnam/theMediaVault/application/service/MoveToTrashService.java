@@ -21,13 +21,11 @@ public class MoveToTrashService implements MoveAllToTrashUseCase {
     public FailedMoveAllToTrashResult execute(MoveAllToTrashCommand command) {
         command.validate();
         
-        User owner = loadUserPort.findById(command.getOwnerId()).orElseThrow(() -> new DomainException("User not found."));
-        
         List<String> validFileIds = new ArrayList();
         List<FailedMoveAllToTrashResult.MoveToTrashError> error = new ArrayList();
         
         for(String currentFolderId : command.getFileIds()) {
-            boolean isOwner = filePresistencePort.isOwner(currentFolderId, owner.getId());
+            boolean isOwner = filePresistencePort.isOwner(currentFolderId, command.getOwnerId());
             if(isOwner) {
                 validFileIds.add(currentFolderId);
             }

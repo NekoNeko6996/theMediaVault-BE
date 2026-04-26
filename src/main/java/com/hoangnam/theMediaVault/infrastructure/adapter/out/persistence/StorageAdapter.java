@@ -1,6 +1,8 @@
 package com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence;
 
 import com.hoangnam.theMediaVault.application.port.out.StoragePort;
+import io.minio.CopyObjectArgs;
+import io.minio.CopySource;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
@@ -48,11 +50,11 @@ public class StorageAdapter implements StoragePort {
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(path)
-                    .build()
+                            .bucket(bucketName)
+                            .object(path)
+                            .build()
             );
-        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidResponseException | ServerException | XmlParserException | IOException | IllegalArgumentException | InvalidKeyException | NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error durring delete your file for path: " + path, e);
         }
     }
@@ -67,6 +69,32 @@ public class StorageAdapter implements StoragePort {
     public String getDownloadUrl(String path) {
         // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void rename(String newPath, String oldPath) {
+        try {
+            minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(newPath)
+                            .source(
+                                    CopySource.builder()
+                                            .bucket(bucketName)
+                                            .object(oldPath)
+                                            .build()
+                            )
+                            .build()
+            );
+            
+            minioClient.removeObject(RemoveObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(oldPath)
+                    .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Error durring rename your file for path: " + oldPath, e);
+        }
     }
 
 }

@@ -6,7 +6,6 @@ import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
 import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
 import com.hoangnam.theMediaVault.domain.exception.DomainException;
 import com.hoangnam.theMediaVault.domain.model.File;
-import com.hoangnam.theMediaVault.domain.model.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -21,15 +20,13 @@ public class GetFilesService implements GetFilesUseCase {
     public List<File> execute(GetFilesQuery query) {
         query.validate();
         
-        User owner = loadUserPort.findById(query.getOwnerId()).orElseThrow(() -> new DomainException("User not found."));
-        
         String parentId = null;
         if(query.getParentId() != null && !query.getParentId().trim().isEmpty()) {
             File parent = filePersistencePort.findById(query.getParentId()).orElseThrow(() -> new DomainException("Parent file not found."));
             parentId = parent.getId();
         }
         
-        return filePersistencePort.findByParentAndOwnerId(parentId, owner.getId());
+        return filePersistencePort.findByParentAndOwnerId(parentId, query.getOwnerId());
     }
 
 }

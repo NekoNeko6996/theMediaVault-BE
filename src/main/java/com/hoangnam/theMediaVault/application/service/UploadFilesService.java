@@ -11,6 +11,7 @@ import com.hoangnam.theMediaVault.domain.model.File;
 import com.hoangnam.theMediaVault.domain.model.User;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
 
@@ -41,18 +42,20 @@ public class UploadFilesService implements UploadFilesUseCase {
         List<FailedFileUploadsResult.UploadError> error = new ArrayList<>();
         for (UploadFilesCommand.UploadItem item : command.getItems()) {
             String extension = item.getExtension().startsWith(".")? item.getExtension() : "." + item.getExtension();
-            String path = (parent == null ? owner.getRootDir() : parent.getStoragePath()) + item.getFileName() + item.getExtension();
             try {
-                String fileHash = storagePort.upload(path, item.getInputStream(), item.getSize(), item.getContentType());
+                String id = UUID.randomUUID().toString();
+                String storgePath = owner.getRootDir() + id + extension;
+                String fileHash = storagePort.upload(storgePath, item.getInputStream(), item.getSize(), item.getContentType());
 
                 files.add(File.createFile(
+                        id,
                         owner,
                         parent,
                         item.getFileName(),
                         item.getContentType(),
                         extension,
                         item.getSize(),
-                        path,
+                        storgePath,
                         fileHash
                 ));
             } catch (Exception e) {

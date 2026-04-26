@@ -3,18 +3,22 @@ package com.hoangnam.theMediaVault.infrastructure.adapter.in.web;
 import com.hoangnam.theMediaVault.application.port.in.CreateFolderUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.MoveAllToTrashUseCase;
+import com.hoangnam.theMediaVault.application.port.in.RenameFileUseCase;
 import com.hoangnam.theMediaVault.application.port.in.UploadFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.CreateFolderCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.GetFilesQuery;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.MoveAllToTrashCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.RenameFileCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.UploadFilesCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.CreateFolderResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedFileUploadsResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedMoveAllToTrashResult;
+import com.hoangnam.theMediaVault.application.service.RenameFileService;
 import com.hoangnam.theMediaVault.domain.model.File;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.CreateFolderRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.GetFilesRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.MoveToTrashRequest;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.RenameFileRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.GetFilesResponse;
 import com.hoangnam.theMediaVault.infrastructure.security.model.CustomUserDetail;
 import java.util.ArrayList;
@@ -39,7 +43,8 @@ public class FileController {
     private final UploadFilesUseCase uploadFilesUseCase;
     private final MoveAllToTrashUseCase moveAllToTrashUseCase;
     private final GetFilesUseCase getFilesUseCase;
-
+    private final RenameFileUseCase renameFileUseCase;
+    
     @PostMapping("/create/foler")
     public ResponseEntity<?> createFoler(@AuthenticationPrincipal CustomUserDetail user, @RequestBody CreateFolderRequest request) {
         
@@ -120,5 +125,12 @@ public class FileController {
         List<File> files = getFilesUseCase.execute(new GetFilesQuery(user.getDomainUser().getId(), request.getParentId()));
         
         return ResponseEntity.ok(GetFilesResponse.fromDomain(files));
+    }
+    
+    @PostMapping("/rename")
+    public ResponseEntity<?> rename(@AuthenticationPrincipal CustomUserDetail user, @RequestBody RenameFileRequest request) {
+        renameFileUseCase.execute(new RenameFileCommand(request.getFileId(), user.getDomainUser().getId(), request.getNewName()));
+        
+        return ResponseEntity.ok("Rename file successfully");
     }
 }

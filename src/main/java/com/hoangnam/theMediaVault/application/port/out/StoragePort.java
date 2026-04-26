@@ -11,4 +11,5 @@ public interface StoragePort {
     void delete(String path);
     boolean exists(String path);
     String getDownloadUrl(String path);
+    void rename(String newPath, String oldPath);
 }

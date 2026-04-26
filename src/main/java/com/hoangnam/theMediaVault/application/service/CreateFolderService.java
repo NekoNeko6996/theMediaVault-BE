@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CreateFolderService implements CreateFolderUseCase {
     
-    private final StoragePort storagePort;
     private final LoadUserPort LoadUserPort;
     private final FilePersistencePort filePersistencePort;
 

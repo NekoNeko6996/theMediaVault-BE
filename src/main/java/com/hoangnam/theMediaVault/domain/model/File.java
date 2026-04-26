@@ -109,6 +109,34 @@ public class File {
                 .updateAt(LocalDateTime.now())
                 .build();
     }
+    
+    public static File createFile(
+            String id,
+            User owner,
+            File parent,
+            String name,
+            String mimeType,
+            String extension,
+            Long sizeBytes,
+            String storagePath,
+            String fileHash) {
+        return File.builder()
+                .id(id)
+                .owner(owner)
+                .parent(parent)
+                .name(name)
+                .itemType(FileItemType.FILE)
+                .mimeType(mimeType)
+                .extension(extension)
+                .sizeBytes(sizeBytes)
+                .storagePath(storagePath)
+                .fileHash(fileHash)
+                .isStarred(false)
+                .isTrashed(false)
+                .createAt(LocalDateTime.now())
+                .updateAt(LocalDateTime.now())
+                .build();
+    }
 
     public static File createFolder(
             User owner,

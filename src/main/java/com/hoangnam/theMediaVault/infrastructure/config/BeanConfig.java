@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.hoangnam.theMediaVault.application.port.in.RegisterUserUseCase;
+import com.hoangnam.theMediaVault.application.port.in.RenameFileUseCase;
 import com.hoangnam.theMediaVault.application.port.in.UploadFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
 import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
@@ -20,6 +21,7 @@ import com.hoangnam.theMediaVault.application.service.CreateFolderService;
 import com.hoangnam.theMediaVault.application.service.GetFilesService;
 import com.hoangnam.theMediaVault.application.service.LoginUserService;
 import com.hoangnam.theMediaVault.application.service.MoveToTrashService;
+import com.hoangnam.theMediaVault.application.service.RenameFileService;
 import com.hoangnam.theMediaVault.application.service.UploadFilesService;
 
 @Configuration
@@ -36,8 +38,8 @@ public class BeanConfig {
     }
     
     @Bean
-    public CreateFolderUseCase createFolderUseCase(StoragePort storagePort, LoadUserPort LoadUserPort, FilePersistencePort filePersistencePort) {
-        return new CreateFolderService(storagePort, LoadUserPort, filePersistencePort);
+    public CreateFolderUseCase createFolderUseCase(LoadUserPort LoadUserPort, FilePersistencePort filePersistencePort) {
+        return new CreateFolderService(LoadUserPort, filePersistencePort);
     }
     
     @Bean
@@ -53,6 +55,10 @@ public class BeanConfig {
     @Bean
     public GetFilesUseCase getFilesUseCase(FilePersistencePort filePersistencePort, LoadUserPort loadUserPort) {
         return new GetFilesService(filePersistencePort, loadUserPort);
+    }
+    
+    @Bean RenameFileUseCase renameFileUseCase(FilePersistencePort filePersistencePort) {
+        return new RenameFileService(filePersistencePort);
     }
     
     @Bean

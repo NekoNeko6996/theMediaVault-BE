@@ -61,4 +61,9 @@ public class FilePersistenceAdapter implements FilePersistencePort {
         if(ids != null && !ids.isEmpty()) fileEntityRepository.moveAllToTrash(ids);
     }
 
+    @Override
+    public void rename(String fileId, String newName) {
+        fileEntityRepository.rename(fileId, newName);
+    }
+
 }

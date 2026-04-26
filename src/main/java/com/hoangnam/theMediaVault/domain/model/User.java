@@ -37,6 +37,10 @@ public class User {
         return this.isActive && this.deletedAt == null;
     }
     
+    /**
+     * 
+     * @return user_{id}/
+     */
     public String getRootDir() {
         return "user_" + this.id + "/";
     }
