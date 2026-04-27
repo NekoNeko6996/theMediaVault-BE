@@ -1,6 +1,5 @@
 package com.hoangnam.theMediaVault.infrastructure.config;
 
-import com.hoangnam.theMediaVault.application.port.in.CheckFilesExistsUseCase;
 import com.hoangnam.theMediaVault.application.port.in.CreateFolderUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.LoginUserUseCase;
@@ -23,7 +22,8 @@ import com.hoangnam.theMediaVault.application.service.MoveToTrashService;
 import com.hoangnam.theMediaVault.application.service.RenameFileService;
 import com.hoangnam.theMediaVault.application.service.UploadFilesService;
 import com.hoangnam.theMediaVault.application.port.out.UserPort;
-import com.hoangnam.theMediaVault.application.service.CheckFilesExistsService;
+import com.hoangnam.theMediaVault.application.service.CheckFilesCanUploadService;
+import com.hoangnam.theMediaVault.application.port.in.CheckFilesCanUploadUseCase;
 
 @Configuration
 public class BeanConfig {
@@ -65,8 +65,8 @@ public class BeanConfig {
     
     
     @Bean
-    public CheckFilesExistsUseCase checkFilesExistsUseCase(FilePersistencePort filePersistencePort) {
-        return new CheckFilesExistsService(filePersistencePort);
+    public CheckFilesCanUploadUseCase checkFilesExistsUseCase(FilePersistencePort filePersistencePort, UserPort userPort) {
+        return new CheckFilesCanUploadService(filePersistencePort, userPort);
     }
     
     @Bean

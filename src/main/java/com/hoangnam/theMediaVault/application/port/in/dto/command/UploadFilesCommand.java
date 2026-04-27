@@ -34,6 +34,14 @@ public class UploadFilesCommand {
             if (item.getInputStream() == null) {
                 throw new DomainException("File stream is missing");
             }
+            
+            if(item.getApprovedHash() == null || item.getApprovedHash().trim().isEmpty()) {
+                throw new DomainException("Approved hash is missing.");
+            }
+            
+            if(item.getApprovedSize() <= 0) {
+                throw new DomainException("Approved size is missing.");
+            }
         }
     }
 }

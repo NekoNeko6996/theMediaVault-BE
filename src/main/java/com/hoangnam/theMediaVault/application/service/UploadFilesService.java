@@ -40,8 +40,6 @@ public class UploadFilesService implements UploadFilesUseCase {
             parent = filePersistencePort.findById(normalizedParentId).orElseThrow(() -> new DomainException("Parent folder not found."));
         }
         
-        
-
         List<File> files = new ArrayList();
         long sizeDelta = 0;
 
@@ -49,6 +47,11 @@ public class UploadFilesService implements UploadFilesUseCase {
         List<UploadError> error = new ArrayList<>();
         for (UploadItem item : command.getItems()) {
             try {
+                // kiểm tra xem file này có size hợp lệ không
+                if(item.getSize() != item.getApprovedSize()) {
+                    throw new DomainException("Invalid upload token");
+                }
+                
                 // kiểm tra xem có đủ dung lượng để tải file này lên hay không
                 if(!owner.canUpload(item.getSize())) {
                     throw new DomainException("Can't upload file " + item.getFileName() + " because used storage has reached the limit " + owner.getStorageLimit());
@@ -59,6 +62,11 @@ public class UploadFilesService implements UploadFilesUseCase {
                 String id = UUID.randomUUID().toString();
                 String storgePath = owner.getRootDir() + id + extension;
                 String fileHash = storagePort.upload(storgePath, item.getInputStream(), item.getSize(), item.getContentType());
+                
+                if(!item.getApprovedHash().equals(fileHash)) {
+                    storagePort.delete(storgePath);
+                    throw new DomainException("Invalid upload token");
+                }
 
                 files.add(File.createFile(
                         id,

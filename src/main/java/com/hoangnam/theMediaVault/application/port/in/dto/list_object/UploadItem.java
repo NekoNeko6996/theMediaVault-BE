@@ -12,4 +12,6 @@ public class UploadItem {
     String extension;
     long size;
     InputStream inputStream;
+    String approvedHash;
+    long approvedSize;
 }

@@ -19,15 +19,21 @@ public class JWTService {
     @Value("${jwt.secret}")
     private String secret;
 
-    public String generateToken(String userID, long expiration) {
+    /**
+     * 
+     * @param subject payload
+     * @param expiration in millisecond
+     * @return JWT token
+     */
+    public String generateToken(String subject, long expiration) {
         Map<String, Object> claims = new HashMap();
-        return createToken(claims, userID, expiration);
+        return createToken(claims, subject, expiration);
     }
 
-    private String createToken(Map<String, Object> claims, String userID, long expiration) {
+    private String createToken(Map<String, Object> claims, String subject, long expiration) {
         return Jwts.builder()
                 .claims(claims)
-                .subject(userID)
+                .subject(subject)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignKey())
