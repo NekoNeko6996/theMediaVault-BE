@@ -4,8 +4,7 @@ import com.hoangnam.theMediaVault.application.port.in.CreateFolderUseCase;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.CreateFolderCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.CreateFolderResult;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
-import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
-import com.hoangnam.theMediaVault.application.port.out.StoragePort;
+import com.hoangnam.theMediaVault.application.port.out.UserPort;
 import com.hoangnam.theMediaVault.domain.exception.DomainException;
 import com.hoangnam.theMediaVault.domain.model.File;
 import com.hoangnam.theMediaVault.domain.model.User;
@@ -16,14 +15,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CreateFolderService implements CreateFolderUseCase {
     
-    private final LoadUserPort LoadUserPort;
+    private final UserPort userPort;
     private final FilePersistencePort filePersistencePort;
 
     @Override
     @Transactional
     public CreateFolderResult execute(CreateFolderCommand command) {
         command.validate();
-        User owner = LoadUserPort.findById(command.getOwnerId()).orElseThrow(() -> new DomainException("User not found."));
+        User owner = userPort.findById(command.getOwnerId()).orElseThrow(() -> new DomainException("User not found."));
         
         File parent = null;
         String basePath = owner.getRootDir();     // root: user-<id>/

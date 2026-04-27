@@ -1,5 +1,6 @@
 package com.hoangnam.theMediaVault.application.port.in.dto.result;
 
+import com.hoangnam.theMediaVault.application.port.in.dto.list_object.UploadError;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -9,11 +10,4 @@ import lombok.Value;
 @AllArgsConstructor
 public class FailedFileUploadsResult {
     List<UploadError> errors;
-
-    @Value
-    @AllArgsConstructor
-    public static class UploadError {
-        String fileName;
-        String reason; // Ví dụ: "Storage limit exceeded"
-    }
 }

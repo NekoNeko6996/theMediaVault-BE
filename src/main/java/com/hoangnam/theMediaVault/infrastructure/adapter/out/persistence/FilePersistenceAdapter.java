@@ -26,12 +26,6 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     public void save(File file) {
         fileEntityRepository.save(fileMapper.toEntity(file));
     }
-    
-    @Override
-    @Transactional
-    public void saves(List<File> files) {
-        fileEntityRepository.saveAll(files.stream().map(fileMapper::toEntity).collect(Collectors.toList()));
-    }
 
     @Override
     public Optional<File> findById(String id) {
@@ -62,8 +56,14 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     }
 
     @Override
+    @Transactional
     public void rename(String fileId, String newName) {
         fileEntityRepository.rename(fileId, newName);
+    }
+
+    @Override
+    public List<File> findExistingFiles(String ownerId, List<String> hashes) {
+        return fileEntityRepository.findExistingFilesByHashes(ownerId, hashes).stream().map(fileMapper::toDomain).collect(Collectors.toList());
     }
 
 }

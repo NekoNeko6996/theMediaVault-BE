@@ -9,8 +9,13 @@ import java.util.Optional;
  * 
  */
 public interface FilePersistencePort {
+    
+    /**
+     * Dành cho việc tạo folder(không liên quan đến cập nhật OWNER)
+     * Hàm Upload dành cho file đã được chuyển sang FileAndUserTranSactionPort nên ko dùng hàm này để upload file.
+     * @param file 
+     */
     void save(File file); 
-    void saves(List<File> file); 
     
     Optional<File> findById(String id);
     
@@ -22,4 +27,6 @@ public interface FilePersistencePort {
     void moveAllToTrash(List<String> fileIds);
     
     void rename(String fileId, String newName);
+    
+    List<File> findExistingFiles(String ownerId, List<String> hashes);
 }

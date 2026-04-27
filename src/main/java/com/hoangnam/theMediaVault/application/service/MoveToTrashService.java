@@ -3,26 +3,24 @@ package com.hoangnam.theMediaVault.application.service;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.MoveAllToTrashCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedMoveAllToTrashResult;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
-import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
 import com.hoangnam.theMediaVault.domain.exception.DomainException;
-import com.hoangnam.theMediaVault.domain.model.User;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import com.hoangnam.theMediaVault.application.port.in.MoveAllToTrashUseCase;
+import com.hoangnam.theMediaVault.application.port.in.dto.list_object.MoveToTrashError;
 
 @RequiredArgsConstructor
 public class MoveToTrashService implements MoveAllToTrashUseCase {
     
     private final FilePersistencePort filePresistencePort;
-    private final LoadUserPort loadUserPort;
 
     @Override
     public FailedMoveAllToTrashResult execute(MoveAllToTrashCommand command) {
         command.validate();
         
         List<String> validFileIds = new ArrayList();
-        List<FailedMoveAllToTrashResult.MoveToTrashError> error = new ArrayList();
+        List<MoveToTrashError> error = new ArrayList();
         
         for(String currentFolderId : command.getFileIds()) {
             boolean isOwner = filePresistencePort.isOwner(currentFolderId, command.getOwnerId());
@@ -30,10 +28,7 @@ public class MoveToTrashService implements MoveAllToTrashUseCase {
                 validFileIds.add(currentFolderId);
             }
             else {
-                error.add(new FailedMoveAllToTrashResult.MoveToTrashError(
-                        currentFolderId, 
-                        "File not found or you don't have permission to move it to trash."
-                ));
+                error.add(new MoveToTrashError(currentFolderId, "File not found or you don't have permission to move it to trash."));
             }
         }
         

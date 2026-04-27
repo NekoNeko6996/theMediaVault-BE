@@ -1,20 +1,24 @@
 package com.hoangnam.theMediaVault.infrastructure.adapter.in.web;
 
+import com.hoangnam.theMediaVault.application.port.in.CheckFilesExistsUseCase;
 import com.hoangnam.theMediaVault.application.port.in.CreateFolderUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.MoveAllToTrashUseCase;
 import com.hoangnam.theMediaVault.application.port.in.RenameFileUseCase;
 import com.hoangnam.theMediaVault.application.port.in.UploadFilesUseCase;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.CheckFilesExistsQuery;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.CreateFolderCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.GetFilesQuery;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.MoveAllToTrashCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.RenameFileCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.UploadFilesCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.list_object.UploadItem;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.CheckFilesExistsResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.CreateFolderResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedFileUploadsResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedMoveAllToTrashResult;
-import com.hoangnam.theMediaVault.application.service.RenameFileService;
 import com.hoangnam.theMediaVault.domain.model.File;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.CheckFilesExistsRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.CreateFolderRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.GetFilesRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.MoveToTrashRequest;
@@ -44,6 +48,7 @@ public class FileController {
     private final MoveAllToTrashUseCase moveAllToTrashUseCase;
     private final GetFilesUseCase getFilesUseCase;
     private final RenameFileUseCase renameFileUseCase;
+    private final CheckFilesExistsUseCase checkFilesExistsUseCase;
     
     @PostMapping("/create/foler")
     public ResponseEntity<?> createFoler(@AuthenticationPrincipal CustomUserDetail user, @RequestBody CreateFolderRequest request) {
@@ -65,7 +70,7 @@ public class FileController {
             @RequestParam("folderId") String folderId, 
             @RequestParam("files") List<MultipartFile> files) {
         try {
-            List<UploadFilesCommand.UploadItem> items = new ArrayList<>();
+            List<UploadItem> items = new ArrayList<>();
             
             for(MultipartFile file : files) {
                 if(file.isEmpty()) continue;
@@ -80,8 +85,7 @@ public class FileController {
                     fileNameWithoutEx = originalFileName.substring(0, lastDotIdx);
                 }
                 
-                items.add(
-                        UploadFilesCommand.UploadItem.builder()
+                items.add(UploadItem.builder()
                         .fileName(fileNameWithoutEx)
                         .extension(extension)
                         .contentType(file.getContentType())
@@ -132,5 +136,11 @@ public class FileController {
         renameFileUseCase.execute(new RenameFileCommand(request.getFileId(), user.getDomainUser().getId(), request.getNewName()));
         
         return ResponseEntity.ok("Rename file successfully");
+    }
+    
+    @PostMapping("/exists")
+    public ResponseEntity<?> checkFilesExists(@AuthenticationPrincipal CustomUserDetail user, @RequestBody CheckFilesExistsRequest request) {
+        CheckFilesExistsResult result = checkFilesExistsUseCase.execute(new CheckFilesExistsQuery(user.getDomainUser().getId(), request.getHashes()));
+        return ResponseEntity.ok(result);
     }
 }

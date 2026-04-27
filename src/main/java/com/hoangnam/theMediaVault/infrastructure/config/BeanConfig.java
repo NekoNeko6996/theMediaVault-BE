@@ -1,11 +1,10 @@
 package com.hoangnam.theMediaVault.infrastructure.config;
 
+import com.hoangnam.theMediaVault.application.port.in.CheckFilesExistsUseCase;
 import com.hoangnam.theMediaVault.application.port.in.CreateFolderUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.LoginUserUseCase;
 import com.hoangnam.theMediaVault.application.port.in.MoveAllToTrashUseCase;
-import com.hoangnam.theMediaVault.application.port.out.CheckUserPort;
-import com.hoangnam.theMediaVault.application.port.out.SaveUserPort;
 import com.hoangnam.theMediaVault.application.service.RegisterUserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,8 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.hoangnam.theMediaVault.application.port.in.RegisterUserUseCase;
 import com.hoangnam.theMediaVault.application.port.in.RenameFileUseCase;
 import com.hoangnam.theMediaVault.application.port.in.UploadFilesUseCase;
+import com.hoangnam.theMediaVault.application.port.out.FileAndUserTransactionPort;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
-import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
 import com.hoangnam.theMediaVault.application.port.out.PasswordEncoderPort;
 import com.hoangnam.theMediaVault.application.port.out.StoragePort;
 import com.hoangnam.theMediaVault.application.service.CreateFolderService;
@@ -23,42 +22,51 @@ import com.hoangnam.theMediaVault.application.service.LoginUserService;
 import com.hoangnam.theMediaVault.application.service.MoveToTrashService;
 import com.hoangnam.theMediaVault.application.service.RenameFileService;
 import com.hoangnam.theMediaVault.application.service.UploadFilesService;
+import com.hoangnam.theMediaVault.application.port.out.UserPort;
+import com.hoangnam.theMediaVault.application.service.CheckFilesExistsService;
 
 @Configuration
 public class BeanConfig {
     
     @Bean
-    public RegisterUserUseCase createUserUseCase(SaveUserPort saveUserPort, CheckUserPort checkUserPort, PasswordEncoderPort passwordEncoderPort) {
-        return new RegisterUserService(saveUserPort, checkUserPort, passwordEncoderPort);
+    public RegisterUserUseCase createUserUseCase(UserPort userPort, PasswordEncoderPort passwordEncoderPort) {
+        return new RegisterUserService(userPort, passwordEncoderPort);
     }
     
     @Bean
-    public LoginUserUseCase loginUserUseCase(LoadUserPort loadUserPort, PasswordEncoderPort passwordEncoderPort, SaveUserPort saveUserPort) {
-        return new  LoginUserService(loadUserPort, passwordEncoderPort, saveUserPort);
+    public LoginUserUseCase loginUserUseCase(UserPort userPort, PasswordEncoderPort passwordEncoderPort) {
+        return new LoginUserService(passwordEncoderPort, userPort);
     }
     
     @Bean
-    public CreateFolderUseCase createFolderUseCase(LoadUserPort LoadUserPort, FilePersistencePort filePersistencePort) {
-        return new CreateFolderService(LoadUserPort, filePersistencePort);
+    public CreateFolderUseCase createFolderUseCase(UserPort userPort, FilePersistencePort filePersistencePort) {
+        return new CreateFolderService(userPort, filePersistencePort);
     }
     
     @Bean
-    public UploadFilesUseCase uploadFilesUseCase(LoadUserPort loadUserPort, FilePersistencePort filePersistencePort, StoragePort storagePort) {
-        return new UploadFilesService(loadUserPort, filePersistencePort, storagePort);
+    public UploadFilesUseCase uploadFilesUseCase(UserPort userPort, FilePersistencePort filePersistencePort, StoragePort storagePort, FileAndUserTransactionPort fileAndUserTransactionPort) {
+        return new UploadFilesService(filePersistencePort, storagePort, userPort, fileAndUserTransactionPort);
     } 
     
     @Bean 
-    public MoveAllToTrashUseCase moveAllToTrashUseCase(FilePersistencePort filePresistencePort, LoadUserPort loadUserPort) {
-        return new MoveToTrashService(filePresistencePort, loadUserPort);
+    public MoveAllToTrashUseCase moveAllToTrashUseCase(FilePersistencePort filePresistencePort) {
+        return new MoveToTrashService(filePresistencePort);
     } 
     
     @Bean
-    public GetFilesUseCase getFilesUseCase(FilePersistencePort filePersistencePort, LoadUserPort loadUserPort) {
-        return new GetFilesService(filePersistencePort, loadUserPort);
+    public GetFilesUseCase getFilesUseCase(FilePersistencePort filePersistencePort, UserPort userPort) {
+        return new GetFilesService(filePersistencePort);
     }
     
-    @Bean RenameFileUseCase renameFileUseCase(FilePersistencePort filePersistencePort) {
+    @Bean 
+    public RenameFileUseCase renameFileUseCase(FilePersistencePort filePersistencePort) {
         return new RenameFileService(filePersistencePort);
+    }
+    
+    
+    @Bean
+    public CheckFilesExistsUseCase checkFilesExistsUseCase(FilePersistencePort filePersistencePort) {
+        return new CheckFilesExistsService(filePersistencePort);
     }
     
     @Bean

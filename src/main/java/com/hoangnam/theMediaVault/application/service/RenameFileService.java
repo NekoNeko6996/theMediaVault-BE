@@ -3,8 +3,6 @@ package com.hoangnam.theMediaVault.application.service;
 import com.hoangnam.theMediaVault.application.port.in.RenameFileUseCase;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.RenameFileCommand;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
-import com.hoangnam.theMediaVault.application.port.out.LoadUserPort;
-import com.hoangnam.theMediaVault.application.port.out.StoragePort;
 import com.hoangnam.theMediaVault.domain.exception.DomainException;
 import com.hoangnam.theMediaVault.domain.model.File;
 import jakarta.transaction.Transactional;
