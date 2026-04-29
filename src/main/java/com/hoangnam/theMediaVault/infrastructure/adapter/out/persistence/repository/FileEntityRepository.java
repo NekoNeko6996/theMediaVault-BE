@@ -1,6 +1,5 @@
 package com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.repository;
 
-import com.hoangnam.theMediaVault.domain.model.File;
 import com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.entity.FileEntity;
 import java.util.List;
 import java.util.Optional;
@@ -25,8 +24,12 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
     @Query("SELECT COUNT(f) > 0 FROM FileEntity f WHERE f.id = :fileId AND f.owner.id = :userId")
     boolean isOwner(String fileId, String userId);
 
-    @Query("SELECT f FROM FileEntity f WHERE (:parentId IS NULL AND f.parent.id IS NULL OR f.parent.id = :parentId) AND f.owner.id = :ownerId AND f.isTrashed = false")
-    List<FileEntity> findByParentAndOwnerId(String parentId, String ownerId);
+    @Query("""
+           SELECT f FROM FileEntity f 
+           WHERE (:parentId IS NULL AND f.parent.id IS NULL OR f.parent.id = :parentId) 
+           AND f.owner.id = :ownerId AND f.isTrashed = false
+           """)
+    List<FileEntity> findByParentIdAndOwnerId(String parentId, String ownerId);
 
     void deleteByIdIn(List<String> ids);
 
@@ -49,20 +52,56 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
     List<String> findAllChildIds(@Param("fileIds") List<String> fileIds);
 
     @Modifying
-    @Query(value = "UPDATE FileEntity f SET f.isTrashed = true, f.trashedAt = CURRENT_TIMESTAMP WHERE f.id IN :ids")
+    @Query("UPDATE FileEntity f SET f.isTrashed = true, f.trashedAt = CURRENT_TIMESTAMP WHERE f.id IN :ids")
     void moveAllToTrash(@Param("ids") List<String> ids);
 
     @Modifying
-    @Query(value = "UPDATE FileEntity f SET f.name = :newName WHERE f.id = :fileId")
+    @Query("UPDATE FileEntity f SET f.name = :newName WHERE f.id = :fileId")
     void rename(String fileId, String newName);
 
-    @Query("SELECT f FROM FileEntity f " +
-           "JOIN FETCH f.owner " + // Bắt buộc Hibernate tải luôn dữ liệu User ngay từ đầu
-           "WHERE f.owner.id = :ownerId AND f.isTrashed = false " +
-           "AND f.fileHash IN :hashes")
-    List<FileEntity> findExistingFilesByHashes(
-        @Param("ownerId") String ownerId, 
-        @Param("hashes") List<String> hashes
+    @Query(value = """
+                   SELECT f FROM FileEntity f 
+                   JOIN FETCH f.owner 
+                   WHERE f.owner.id = :ownerId AND f.isTrashed = false AND f.fileHash IN :hashes
+                   """)
+    List<FileEntity> findExistingFilesByHashes(@Param("ownerId") String ownerId, @Param("hashes") List<String> hashes);
+    
+    @Query(value = """
+                   SELECT f FROM FileEntity f 
+                   JOIN FETCH f.owner 
+                   WHERE f.owner.id = :ownerId AND f.isTrashed = false AND f.id IN :fileIds
+                   """)
+    List<FileEntity> findByOwnerAndFileIds(@Param("ownerId") String ownerId, @Param("fileIds") List<String> fileIds);
+    
+    @Modifying
+    @Query(value = """
+                   UPDATE files 
+                   SET parent_id = :newParentFolderId
+                   WHERE id IN :fileIds
+                   """, nativeQuery = true)
+    void moveFiles(@Param("fileIds") List<String> fileIds, @Param("newParentFolderId") String newParentFolderId);
+    
+    @Modifying
+    @Query(value = """
+                   UPDATE files
+                   SET name = :newUniqueName, parent_id = :targetParentId
+                   WHERE id = :idToMove
+                   """, nativeQuery = true)
+    void renameAndMove(String idToMove, String newUniqueName, String targetParentId);
+    
+    /**
+     * 
+     * @param ownerId
+     * @param fileIds
+     * @return Danh sách file ids tồn tại và owner hợp lệ
+     */
+    @Query(value = """
+                   SELECT f.id FROM FileEntity f
+                   JOIN FETCH f.owner 
+                   WHERE f.owner.id = :ownerId AND f.id IN :fileIds
+                   """)
+    List<String> findExistingAndOnerFilesUsingOwnerIdAndFileIds(
+            @Param("ownerId") String ownerId, 
+            @Param("fileIds") List<String> fileIds
     );
-
 }
