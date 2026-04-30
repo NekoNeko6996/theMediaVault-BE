@@ -30,7 +30,6 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     }
     
     @Override
-    @Transactional
     public void moveAllToTrash(List<String> fileIds) {
         List<String> ids = fileEntityRepository.findAllChildIds(fileIds);
         
@@ -38,22 +37,29 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     }
     
     @Override
-    @Transactional
     public void rename(String fileId, String newName) {
         fileEntityRepository.rename(fileId, newName);
     }
     
     @Override
-    @Transactional
     public void moveFilesToNewDir(List<String> fileIds, String newParentFolderId) {
         fileEntityRepository.moveFiles(fileIds, newParentFolderId);
     }
     
     
     @Override
-    @Transactional
     public void renameAndMove(String idToMove, String newUniqueName, String targetParentId) {
         fileEntityRepository.renameAndMove(idToMove, newUniqueName, targetParentId);
+    }
+    
+    @Override
+    public void toggleStarred(String fileId) {
+        fileEntityRepository.toggleStarred(fileId);
+    }
+
+    @Override
+    public void restoreAllFromTrash(List<String> fileIds) {
+        fileEntityRepository.restoreAll(fileIds);
     }
 
 
@@ -65,7 +71,7 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     }
 
     @Override
-    public boolean findByNameAndParentAndOwner(String name, String parentId, String ownerId) {
+    public boolean findExistsByNameAndParentAndOwner(String name, String parentId, String ownerId) {
         return fileEntityRepository.findByNameAndParentAndOwner(name, parentId, ownerId).isPresent();
     }
 
@@ -98,6 +104,14 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     public List<String> findAllChildIds(List<String> fileIds) {
         return fileEntityRepository.findAllChildIds(fileIds);
     }
-    
 
+    @Override
+    public boolean findExistsByParentIdAndNameAndExtension(String parentId, String name, String extension) {
+        return fileEntityRepository.findExistsByParentIdAndNameAndExtension(parentId, name, extension);
+    }
+
+    @Override
+    public Optional<File> findByIdAndOwnerId(String fileId, String ownerId) {
+        return fileEntityRepository.findByIdAndOwnerId(fileId, ownerId).map(fileMapper::toDomain);
+    }
 }

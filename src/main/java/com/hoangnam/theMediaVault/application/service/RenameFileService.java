@@ -29,6 +29,10 @@ public class RenameFileService implements RenameFileUseCase {
             throw new DomainException("The new name needs to be different from the old name.");
         }
         
+        if(filePersistencePort.findExistsByParentIdAndNameAndExtension(file.getParent().getId(), command.getNewName(), file.getExtension())) {
+            throw new DomainException("File name " + command.getNewName() + " is already exist in this dir.");
+        }
+        
         try {
             filePersistencePort.rename(command.getFileId(), command.getNewName());
         }

@@ -45,7 +45,7 @@ public class CreateFolderService implements CreateFolderUseCase {
             basePath = parent.getStoragePath();
         }
         
-        if(filePersistencePort.findByNameAndParentAndOwner(command.getFolderName(), normalizedParentId, owner.getId())) {
+        if(filePersistencePort.findExistsByNameAndParentAndOwner(command.getFolderName(), normalizedParentId, owner.getId())) {
             throw new DomainException("Folder name already in this directory.");
         }
         

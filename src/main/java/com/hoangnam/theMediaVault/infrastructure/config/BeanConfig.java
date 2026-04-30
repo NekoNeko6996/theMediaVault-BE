@@ -24,6 +24,12 @@ import com.hoangnam.theMediaVault.application.service.UploadFilesService;
 import com.hoangnam.theMediaVault.application.port.out.UserPort;
 import com.hoangnam.theMediaVault.application.service.CheckFilesCanUploadService;
 import com.hoangnam.theMediaVault.application.port.in.CheckFilesCanUploadUseCase;
+import com.hoangnam.theMediaVault.application.port.in.MoveFilesUseCase;
+import com.hoangnam.theMediaVault.application.port.in.RestoreFilesFromTrashUseCase;
+import com.hoangnam.theMediaVault.application.port.in.ToggleStarredFileUseCase;
+import com.hoangnam.theMediaVault.application.service.MoveFilesService;
+import com.hoangnam.theMediaVault.application.service.RestoreFilesFromTrashService;
+import com.hoangnam.theMediaVault.application.service.ToggleStarredFileService;
 
 @Configuration
 public class BeanConfig {
@@ -67,6 +73,21 @@ public class BeanConfig {
     @Bean
     public CheckFilesCanUploadUseCase checkFilesExistsUseCase(FilePersistencePort filePersistencePort, UserPort userPort) {
         return new CheckFilesCanUploadService(filePersistencePort, userPort);
+    }
+    
+    @Bean
+    public MoveFilesUseCase moveFilesUseCase(FilePersistencePort filePersistencePort) {
+        return new MoveFilesService(filePersistencePort);
+    }
+    
+    @Bean
+    public ToggleStarredFileUseCase toggleStarredFileUseCase(FilePersistencePort filePersistencePort) {
+        return new ToggleStarredFileService(filePersistencePort);
+    }
+    
+    @Bean
+    public RestoreFilesFromTrashUseCase restoreFilesFromTrashUseCase(FilePersistencePort filePersistencePort) {
+        return new RestoreFilesFromTrashService(filePersistencePort);
     }
     
     @Bean

@@ -8,19 +8,23 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import com.hoangnam.theMediaVault.application.port.in.MoveAllToTrashUseCase;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.MoveToTrashError;
+import com.hoangnam.theMediaVault.application.port.in.dto.list_object.FileIdAndReason;
+import jakarta.transaction.Transactional;
+import java.util.logging.Logger;
 
 @RequiredArgsConstructor
 public class MoveToTrashService implements MoveAllToTrashUseCase {
     
+    private static final Logger logger = Logger.getLogger(MoveToTrashService.class.getName());
     private final FilePersistencePort filePresistencePort;
 
     @Override
+    @Transactional
     public FailedMoveAllToTrashResult execute(MoveAllToTrashCommand command) {
         command.validate();
         
         List<String> validFileIds = new ArrayList();
-        List<MoveToTrashError> error = new ArrayList();
+        List<FileIdAndReason> errors = new ArrayList();
         
         for(String currentFolderId : command.getFileIds()) {
             boolean isOwner = filePresistencePort.isOwner(currentFolderId, command.getOwnerId());
@@ -28,7 +32,7 @@ public class MoveToTrashService implements MoveAllToTrashUseCase {
                 validFileIds.add(currentFolderId);
             }
             else {
-                error.add(new MoveToTrashError(currentFolderId, "File not found or you don't have permission to move it to trash."));
+                errors.add(new FileIdAndReason(currentFolderId, "File not found or you don't have permission to move it to trash."));
             }
         }
         
@@ -38,11 +42,12 @@ public class MoveToTrashService implements MoveAllToTrashUseCase {
                 filePresistencePort.moveAllToTrash(command.getFileIds());
             }
             catch(Exception e) {
+                logger.severe(e.getMessage());
                 throw new DomainException("Error durring drop folders to trash.");
             }
         }
         
-        return new FailedMoveAllToTrashResult(error);
+        return new FailedMoveAllToTrashResult(errors);
     }
     
 }

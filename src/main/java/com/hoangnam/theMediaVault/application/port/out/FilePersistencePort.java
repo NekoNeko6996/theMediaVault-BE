@@ -19,18 +19,22 @@ public interface FilePersistencePort {
     void save(File file); 
     void rename(String fileId, String newName);
     void moveAllToTrash(List<String> fileIds);
+    void restoreAllFromTrash(List<String> fileIds);
     void moveFilesToNewDir(List<String> fileIds, String newParentFolderId);
     void renameAndMove(String idToMove, String newUniqueName, String targetParentId);
+    void toggleStarred(String fileId);
         
     
     // query
     Optional<File> findById(String id);
-    boolean findByNameAndParentAndOwner(String name, String parentId, String ownerId);
+    boolean findExistsByNameAndParentAndOwner(String name, String parentId, String ownerId);
     boolean isOwner(String fileId, String ownerId);
     List<File> findByParentIdAndOwnerId(String parentId, String ownerId);
     List<File> findExistingFiles(String ownerId, List<String> hashes);
     List<File> findByOwnerAndFileIds(String ownerId, List<String> fileId);
     List<String> findExistingAndOnerFilesUsingOwnerIdAndFileIds(String ownerId, List<String> FileIds);
+    boolean findExistsByParentIdAndNameAndExtension(String parentId, String name, String extension);
+    Optional<File> findByIdAndOwnerId(String fileId, String ownerId);
     
     /**
      * Tìm và trả về 1 danh sách bao gồm các entity có id được truyền vào cũng với các file or folder con bên trong
