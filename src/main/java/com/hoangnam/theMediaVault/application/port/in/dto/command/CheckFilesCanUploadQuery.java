@@ -1,7 +1,7 @@
 package com.hoangnam.theMediaVault.application.port.in.dto.command;
 
 import com.hoangnam.theMediaVault.application.port.in.dto.ApplicationDTOCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.FilesHashAndSize;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.FilesHashAndSize;
 import com.hoangnam.theMediaVault.domain.exception.DomainException;
 import java.util.List;
 import lombok.AllArgsConstructor;

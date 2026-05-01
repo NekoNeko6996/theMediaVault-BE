@@ -3,19 +3,23 @@ package com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence;
 import com.hoangnam.theMediaVault.application.port.out.StoragePort;
 import io.minio.CopyObjectArgs;
 import io.minio.CopySource;
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
+import io.minio.StatObjectArgs;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
 import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
+import io.minio.http.Method;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,10 +27,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class StorageAdapter implements StoragePort {
-
+    
     private final MinioClient minioClient;
     @Value("${minio.bucket}")
     private String bucketName;
+    @Value("${minio.download.url.expiration}")
+    private int downloadExpiration;
 
     @Override
     public String upload(String path, InputStream inputStream, long size, String contentType) {
@@ -61,14 +67,38 @@ public class StorageAdapter implements StoragePort {
 
     @Override
     public boolean exists(String path) {
-        // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(path).build());
+            return true;
+        }
+        catch (ErrorResponseException  e) {
+            if ("NoSuchKey".equals(e.errorResponse().code()) || 
+                "NoSuchObject".equals(e.errorResponse().code())) {
+                return false;
+            }
+            throw new RuntimeException("Error occurred while checking object existence", e);
+        }
+        catch (Exception e) {
+            // Handle other potential SDK or network exceptions
+            throw new RuntimeException("Unexpected error connecting to MinIO", e);
+        }
     }
 
     @Override
     public String getDownloadUrl(String path) {
-        // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            return minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                    .method(Method.GET)
+                    .bucket(bucketName)
+                    .object(path)
+                    .expiry(downloadExpiration, TimeUnit.MINUTES)
+                    .build()
+            );
+        }
+        catch(Exception e) {
+            throw new RuntimeException("Error durring create dowload url for: " + path, e);
+        }
     }
 
     @Override

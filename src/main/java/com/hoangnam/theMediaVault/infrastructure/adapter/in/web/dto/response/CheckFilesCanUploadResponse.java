@@ -1,6 +1,6 @@
 package com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response;
 
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.FileHashAndReason;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.FileHashAndReason;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Value;

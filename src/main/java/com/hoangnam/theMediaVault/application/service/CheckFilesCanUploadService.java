@@ -1,7 +1,7 @@
 package com.hoangnam.theMediaVault.application.service;
 
 import com.hoangnam.theMediaVault.application.port.in.dto.command.CheckFilesCanUploadQuery;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.FilesHashAndSize;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.FilesHashAndSize;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.CheckFilesCanUploadResult;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
 import com.hoangnam.theMediaVault.domain.model.File;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import com.hoangnam.theMediaVault.application.port.in.CheckFilesCanUploadUseCase;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.FileHashAndReason;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.FileHashAndReason;
 import com.hoangnam.theMediaVault.application.port.out.UserPort;
 import com.hoangnam.theMediaVault.domain.exception.DomainException;
 import com.hoangnam.theMediaVault.domain.model.User;

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swagger UI - TheMediaVault API</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family: 'Open Sans', sans-serif;
+            --color-get: #61affe;
+            --bg-get: rgba(97, 175, 254, .1);
+            --border-get: #61affe;
+            --color-post: #49cc90;
+            --bg-post: rgba(73, 204, 144, .1);
+            --border-post: #49cc90;
+            --color-text: #3b4151;
+            --color-border: #e8e8e8;
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font-family);
+            color: var(--color-text);
+            background-color: #fafafa;
+        }
+
+        .topbar {
+            background-color: #1b1b1b;
+            padding: 10px 0;
+        }
+
+        .wrapper {
+            max-width: 1460px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .topbar .link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topbar svg {
+            fill: #85ea2d;
+            width: 40px;
+            height: 40px;
+        }
+
+        .information-container {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .info .title {
+            font-size: 36px;
+            margin: 0;
+            color: #3b4151;
+            font-weight: 700;
+        }
+
+        .info .title small {
+            font-size: 14px;
+            background: #7d8492;
+            border-radius: 57px;
+            color: #fff;
+            padding: 4px 8px;
+            vertical-align: super;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        .info .description {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #3b4151;
+            line-height: 1.5;
+        }
+
+        .opblock-tag-section {
+            margin-bottom: 30px;
+        }
+
+        .opblock-tag {
+            font-size: 24px;
+            margin: 0 0 10px 0;
+            padding: 10px 0;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(59, 65, 81, .2);
+            color: #3b4151;
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .opblock-tag:hover {
+            background: rgba(0, 0, 0, .02);
+        }
+
+        .opblock {
+            border-radius: 4px;
+            margin: 0 0 15px 0;
+            border: 1px solid #000;
+            box-shadow: 0 0 3px rgba(0, 0, 0, .19);
+            background: #fff;
+        }
+
+        .opblock-get {
+            border-color: var(--border-get);
+            background: var(--bg-get);
+        }
+
+        .opblock-post {
+            border-color: var(--border-post);
+            background: var(--bg-post);
+        }
+
+        .opblock-summary {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .opblock-summary-method {
+            font-size: 14px;
+            font-weight: 700;
+            min-width: 80px;
+            padding: 6px 0;
+            text-align: center;
+            border-radius: 3px;
+            color: #fff;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+        }
+
+        .opblock-get .opblock-summary-method {
+            background: var(--color-get);
+        }
+
+        .opblock-post .opblock-summary-method {
+            background: var(--color-post);
+        }
+
+        .opblock-summary-path {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-family: monospace;
+            color: #3b4151;
+        }
+
+        .opblock-summary-description {
+            font-size: 13px;
+            color: #3b4151;
+            margin-left: 10px;
+        }
+
+        .opblock-body {
+            display: none;
+            padding: 20px;
+            background: #fff;
+            border-top: 1px solid rgba(0, 0, 0, .1);
+        }
+
+        .opblock-section-header {
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, .8);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        .opblock-section-header h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #3b4151;
+        }
+
+        table.parameters {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        table.parameters th {
+            text-align: left;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(59, 65, 81, .2);
+            font-weight: 700;
+            color: #3b4151;
+            width: 20%;
+        }
+
+        table.parameters td {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(59, 65, 81, .1);
+            vertical-align: top;
+        }
+
+        .parameter-name {
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #3b4151;
+        }
+
+        .parameter-type {
+            font-size: 12px;
+            font-family: monospace;
+            color: #3b4151;
+        }
+
+        .parameter-in {
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+        }
+
+        .body-param-content {
+            background: #41444e;
+            color: #fff;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 13px;
+            margin: 0;
+            overflow-x: auto;
+        }
+
+        .arrow {
+            margin-left: auto;
+            margin-right: 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .opblock.expanded .arrow {
+            transform: rotate(90deg);
+        }
+
+        .opblock.expanded .opblock-body {
+            display: block;
+        }
+
+        .section-arrow {
+            margin-left: 10px;
+            transition: transform 0.2s ease;
+            transform: rotate(90deg);
+        }
+
+        .opblock-tag-section.collapsed .section-arrow {
+            transform: rotate(0deg);
+        }
+
+        .opblock-tag-section.collapsed .opblock {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">
+        <div class="wrapper">
+            <a href="#" class="link">
+                <svg viewBox="0 0 40 40">
+                    <path
+                        d="M20 0C8.954 0 0 8.954 0 20C0 31.046 8.954 40 20 40C31.046 40 40 31.046 40 20C40 8.954 31.046 0 20 0ZM28.875 30.625L26.375 28.125C24.625 29.5 22.5 30.25 20 30.25C14.375 30.25 9.75 25.625 9.75 20C9.75 14.375 14.375 9.75 20 9.75C25.625 9.75 30.25 14.375 30.25 20C30.25 21.875 29.75 23.625 28.875 25.125L31.375 27.625L28.875 30.625ZM20 12.25C15.75 12.25 12.25 15.75 12.25 20C12.25 24.25 15.75 27.75 20 27.75C24.25 27.75 27.75 24.25 27.75 20C27.75 15.75 24.25 12.25 20 12.25Z">
+                    </path>
+                </svg>
+                <span>swagger</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <div class="information-container">
+            <div class="info">
+                <h2 class="title">TheMediaVault API <small>1.0.0</small></h2>
+                <div class="description">
+                    <p>API Documentation for TheMediaVault project. Contains endpoints for authentication, user profile,
+                        and file/folder management.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="swagger-container">
+            <!-- Auth Controller -->
+            <div class="opblock-tag-section">
+                <h3 class="opblock-tag" onclick="toggleSection(this)">
+                    <span>auth-controller</span>
+                    <svg class="section-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </h3>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/auth/register</span>
+                        <div class="opblock-summary-description">Register a new user account</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">body</div>
+                                        <div class="parameter-type">object</div>
+                                        <div class="parameter-in">(body)</div>
+                                    </td>
+                                    <td>
+                                        <pre class="body-param-content">{
+  "username": "string",
+  "email": "string",
+  "password": "string"
+}</pre>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/auth/login</span>
+                        <div class="opblock-summary-description">Authenticate a user and get a JWT token</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">body</div>
+                                        <div class="parameter-type">object</div>
+                                        <div class="parameter-in">(body)</div>
+                                    </td>
+                                    <td>
+                                        <pre class="body-param-content">{
+  "username": "string",
+  "password": "string"
+}</pre>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Controller -->
+            <div class="opblock-tag-section">
+                <h3 class="opblock-tag" onclick="toggleSection(this)">
+                    <span>user-controller</span>
+                    <svg class="section-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </h3>
+
+                <div class="opblock opblock-get">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">GET</span>
+                        <span class="opblock-summary-path">/api/v1/users/profile</span>
+                        <div class="opblock-summary-description">Get the profile of the currently authenticated user
+                        </div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">Authorization</div>
+                                        <div class="parameter-type">string</div>
+                                        <div class="parameter-in">(header)</div>
+                                    </td>
+                                    <td>
+                                        <p>Bearer JWT Token</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Controller -->
+            <div class="opblock-tag-section">
+                <h3 class="opblock-tag" onclick="toggleSection(this)">
+                    <span>file-controller</span>
+                    <svg class="section-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </h3>
+
+                <div class="opblock opblock-get">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">GET</span>
+                        <span class="opblock-summary-path">/api/v1/files/get/files/{parentId}</span>
+                        <div class="opblock-summary-description">Get a list of files and folders within a specific
+                            parent folder</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">parentId</div>
+                                        <div class="parameter-type">string</div>
+                                        <div class="parameter-in">(path)</div>
+                                    </td>
+                                    <td>
+                                        <p>The ID of the parent folder. Use "root" for the root directory.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/files/create/folder</span>
+                        <div class="opblock-summary-description">Create a new folder</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">body</div>
+                                        <div class="parameter-type">object</div>
+                                        <div class="parameter-in">(body)</div>
+                                    </td>
+                                    <td>
+                                        <pre class="body-param-content">{
+  "folderName": "string",
+  "parentId": "string"
+}</pre>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/files/exists</span>
+                        <div class="opblock-summary-description">Check if files can be uploaded</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">body</div>
+                                        <div class="parameter-type">object</div>
+                                        <div class="parameter-in">(body)</div>
+                                    </td>
+                                    <td>
+                                        <pre class="body-param-content">{
+  "filesHashAndSize": [
+    {
+      "fileHash": "string",
+      "sizeBytes": 0
+    }
+  ]
+}</pre>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/files/uploads</span>
+                        <div class="opblock-summary-description">Upload files to a specific folder</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">folderId</div>
+                                        <div class="parameter-type">string</div>
+                                        <div class="parameter-in">(formData)</div>
+                                    </td>
+                                    <td>
+                                        <p>The ID of the folder</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">files</div>
+                                        <div class="parameter-type">array</div>
+                                        <div class="parameter-in">(formData)</div>
+                                    </td>
+                                    <td>
+                                        <p>List of files to upload</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">uploadTokens</div>
+                                        <div class="parameter-type">array</div>
+                                        <div class="parameter-in">(formData)</div>
+                                    </td>
+                                    <td>
+                                        <p>List of upload tokens</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/files/rename</span>
+                        <div class="opblock-summary-description">Rename a file or folder</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">body</div>
+                                        <div class="parameter-type">object</div>
+                                        <div class="parameter-in">(body)</div>
+                                    </td>
+                                    <td>
+                                        <pre class="body-param-content">{
+  "fileId": "string",
+  "newName": "string"
+}</pre>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/files/move</span>
+                        <div class="opblock-summary-description">Move files to a different folder</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">body</div>
+                                        <div class="parameter-type">object</div>
+                                        <div class="parameter-in">(body)</div>
+                                    </td>
+                                    <td>
+                                        <pre class="body-param-content">{
+  "newParentFileId": "string",
+  "fileToMoveIds": [
+    "string"
+  ]
+}</pre>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/files/toggle/starred/{fileId}</span>
+                        <div class="opblock-summary-description">Toggle the starred status of a file or folder</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">fileId</div>
+                                        <div class="parameter-type">string</div>
+                                        <div class="parameter-in">(path)</div>
+                                    </td>
+                                    <td>
+                                        <p>The ID of the file</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-get">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">GET</span>
+                        <span class="opblock-summary-path">/api/v1/files/download/{fileId}</span>
+                        <div class="opblock-summary-description">Get a direct download URL for a file</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">fileId</div>
+                                        <div class="parameter-type">string</div>
+                                        <div class="parameter-in">(path)</div>
+                                    </td>
+                                    <td>
+                                        <p>The ID of the file to download</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/files/drop</span>
+                        <div class="opblock-summary-description">Move specified files to the trash</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">body</div>
+                                        <div class="parameter-type">object</div>
+                                        <div class="parameter-in">(body)</div>
+                                    </td>
+                                    <td>
+                                        <pre class="body-param-content">{
+  "fileIds": [
+    "string"
+  ]
+}</pre>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-get">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">GET</span>
+                        <span class="opblock-summary-path">/api/v1/files/get/trash</span>
+                        <div class="opblock-summary-description">Get all files currently in the trash</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <p style="padding: 0 20px;">No parameters</p>
+                    </div>
+                </div>
+
+                <div class="opblock opblock-post">
+                    <div class="opblock-summary" onclick="toggleOpblock(this)">
+                        <span class="opblock-summary-method">POST</span>
+                        <span class="opblock-summary-path">/api/v1/files/restore</span>
+                        <div class="opblock-summary-description">Restore files from the trash back to their original
+                            locations</div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="opblock-body">
+                        <div class="opblock-section-header">
+                            <h4>Parameters</h4>
+                        </div>
+                        <table class="parameters">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="parameter-name">body</div>
+                                        <div class="parameter-type">object</div>
+                                        <div class="parameter-in">(body)</div>
+                                    </td>
+                                    <td>
+                                        <pre class="body-param-content">{
+  "fileIds": [
+    "string"
+  ]
+}</pre>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleOpblock(element) {
+            const opblock = element.parentElement;
+            opblock.classList.toggle('expanded');
+        }
+
+        function toggleSection(element) {
+            const section = element.parentElement;
+            section.classList.toggle('collapsed');
+        }
+    </script>
+</body>
+
+</html>

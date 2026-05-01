@@ -24,7 +24,7 @@ public class GetFilesService implements GetFilesUseCase {
             parentId = parent.getId();
         }
         
-        if(!filePersistencePort.isOwner(parentId, query.getOwnerId())) {
+        if(parentId != null && !filePersistencePort.isOwner(parentId, query.getOwnerId())) {
             throw new DomainException("Your don't have any permission to view this folder.");
         }
         

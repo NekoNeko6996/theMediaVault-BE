@@ -35,6 +35,7 @@ public interface FilePersistencePort {
     List<String> findExistingAndOnerFilesUsingOwnerIdAndFileIds(String ownerId, List<String> FileIds);
     boolean findExistsByParentIdAndNameAndExtension(String parentId, String name, String extension);
     Optional<File> findByIdAndOwnerId(String fileId, String ownerId);
+    List<File> findAllTrashFilesByOwnerId(String ownerId);
     
     /**
      * Tìm và trả về 1 danh sách bao gồm các entity có id được truyền vào cũng với các file or folder con bên trong

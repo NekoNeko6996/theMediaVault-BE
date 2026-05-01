@@ -114,4 +114,11 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     public Optional<File> findByIdAndOwnerId(String fileId, String ownerId) {
         return fileEntityRepository.findByIdAndOwnerId(fileId, ownerId).map(fileMapper::toDomain);
     }
+
+    @Override
+    public List<File> findAllTrashFilesByOwnerId(String ownerId) {
+        return fileEntityRepository.findAllTrashFilesByOwnerId(ownerId).stream().map(fileMapper::toDomain).collect(Collectors.toList());
+    }
+    
+    
 }

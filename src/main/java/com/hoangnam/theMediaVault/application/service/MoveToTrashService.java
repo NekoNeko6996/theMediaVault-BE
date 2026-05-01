@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import com.hoangnam.theMediaVault.application.port.in.MoveAllToTrashUseCase;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.FileIdAndReason;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.FileIdAndReason;
 import jakarta.transaction.Transactional;
 import java.util.logging.Logger;
 

@@ -1,4 +1,4 @@
-package com.hoangnam.theMediaVault.application.port.in.dto.list_object;
+package com.hoangnam.theMediaVault.application.port.in.dto.objects;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;

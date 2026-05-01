@@ -11,7 +11,7 @@ import com.hoangnam.theMediaVault.application.port.in.dto.command.GetFilesQuery;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.MoveAllToTrashCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.RenameFileCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.UploadFilesCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.UploadItem;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.UploadItem;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.CheckFilesCanUploadResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.CreateFolderResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedFileUploadsResult;
@@ -19,7 +19,6 @@ import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedMoveAllTo
 import com.hoangnam.theMediaVault.domain.model.File;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.CheckFilesCanUploadRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.CreateFolderRequest;
-import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.GetFilesRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.MoveToTrashRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.RenameFileRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.GetFilesResponse;
@@ -27,7 +26,6 @@ import com.hoangnam.theMediaVault.infrastructure.security.model.CustomUserDetail
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,21 +35,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.hoangnam.theMediaVault.application.port.in.CheckFilesCanUploadUseCase;
+import com.hoangnam.theMediaVault.application.port.in.GetDownloadUrlUseCase;
+import com.hoangnam.theMediaVault.application.port.in.GetTrashFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.MoveFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.RestoreFilesFromTrashUseCase;
 import com.hoangnam.theMediaVault.application.port.in.ToggleStarredFileUseCase;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.GetDowloadUrlQuery;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.GetTrashFilesQuery;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.MoveFilesCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.RestoreFilesFromTrashCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.ToggleStarredFileCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.FilesHashAndSize;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.FilesHashAndSize;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedMoveFilesResult;
+import com.hoangnam.theMediaVault.application.port.in.dto.result.GetDownLoadUrlResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.ToggleStarredFileResult;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.MoveFilesRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.RestoreFilesFromTrashRequest;
-import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.ToggleStarredFileRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.CheckFilesCanUploadResponse;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.OnlyMessageResponse;
 import com.hoangnam.theMediaVault.infrastructure.service.JWTService;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/v1/files")
@@ -67,7 +73,9 @@ public class FileController {
     private final MoveFilesUseCase moveFilesUseCase;
     private final ToggleStarredFileUseCase toggleStarredFileUseCase; 
     private final RestoreFilesFromTrashUseCase restoreFilesFromTrashUseCase;
-
+    private final GetDownloadUrlUseCase getDownloadUrlUseCase; 
+    private final GetTrashFilesUseCase getTrashFilesUseCase;
+    
     private final JWTService jwtService;
 
     @Value("${jwt.upload.token.expiration}")
@@ -84,7 +92,7 @@ public class FileController {
 
         CreateFolderResult result = createFolderUseCase.execute(command);
 
-        return new ResponseEntity(result, HttpStatus.CREATED);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/uploads")
@@ -104,7 +112,14 @@ public class FileController {
                 MultipartFile file = files.get(i);
                 String token = uploadTokens.get(i);
 
-                String[] hashAndSize = jwtService.extractSubject(token).split("_");
+                String[] hashAndSize;
+                try {
+                    hashAndSize = jwtService.extractSubject(token).split("_");
+                }
+                catch(JwtException e) {
+                    return ResponseEntity.badRequest().body(new OnlyMessageResponse("Invalid upload token: " + e.getMessage()));
+                }
+                
                 String approvedHash = hashAndSize[0];
                 long approvedSize = Long.parseLong(hashAndSize[1]);
 
@@ -161,9 +176,11 @@ public class FileController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/get")
-    public ResponseEntity<?> getFiles(@AuthenticationPrincipal CustomUserDetail user, @RequestBody GetFilesRequest request) {
-        List<File> files = getFilesUseCase.execute(new GetFilesQuery(user.getDomainUser().getId(), request.getParentId()));
+    // parentId = root thì sẽ lấy ở root
+    @GetMapping("/get/files/{parentId}")
+    public ResponseEntity<?> getFiles(@AuthenticationPrincipal CustomUserDetail user, @PathVariable("parentId") String parentId) {
+        parentId = "root".equals(parentId)? "" : parentId;
+        List<File> files = getFilesUseCase.execute(new GetFilesQuery(user.getDomainUser().getId(), parentId));
 
         return ResponseEntity.ok(GetFilesResponse.fromDomain(files));
     }
@@ -172,7 +189,7 @@ public class FileController {
     public ResponseEntity<?> rename(@AuthenticationPrincipal CustomUserDetail user, @RequestBody RenameFileRequest request) {
         renameFileUseCase.execute(new RenameFileCommand(request.getFileId(), user.getDomainUser().getId(), request.getNewName()));
 
-        return ResponseEntity.ok("Rename file successfully");
+        return ResponseEntity.ok(new OnlyMessageResponse("Rename file successfully"));
     }
 
     @PostMapping("/exists")
@@ -197,16 +214,27 @@ public class FileController {
         return ResponseEntity.ok(result);
     }
     
-    @PostMapping("/toggle-starred") 
-    public ResponseEntity<?> toggleStarred(@AuthenticationPrincipal CustomUserDetail user, @RequestBody ToggleStarredFileRequest request) {
-        ToggleStarredFileResult result = toggleStarredFileUseCase.execute(new ToggleStarredFileCommand(user.getDomainUser().getId(), request.getTargetFileId()));
+    @PostMapping("/toggle/starred/{fileId}") 
+    public ResponseEntity<?> toggleStarred(@AuthenticationPrincipal CustomUserDetail user, @PathVariable("fileId") String fileId) {
+        ToggleStarredFileResult result = toggleStarredFileUseCase.execute(new ToggleStarredFileCommand(user.getDomainUser().getId(), fileId));
         return ResponseEntity.ok(result);
     }
     
     @PostMapping("/restore")
     public ResponseEntity<?> restoreFileFromTrash(@AuthenticationPrincipal CustomUserDetail user, @RequestBody RestoreFilesFromTrashRequest request) {
         restoreFilesFromTrashUseCase.execute(new RestoreFilesFromTrashCommand(user.getDomainUser().getId(), request.getFileIds()));
-        return ResponseEntity.ok("Files restore success.");
+        return ResponseEntity.ok(new OnlyMessageResponse("Files restore success."));
+    }
+    
+    @GetMapping("/download/{fileId}")
+    public ResponseEntity<?> getDownLoadUrl(@AuthenticationPrincipal CustomUserDetail user, @PathVariable("fileId") String fileId) {
+        GetDownLoadUrlResult result = getDownloadUrlUseCase.execute(new GetDowloadUrlQuery(user.getDomainUser().getId(), fileId));
+        return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/get/trash")
+    public ResponseEntity<?> getAllTrashFiles(@AuthenticationPrincipal CustomUserDetail user) {
+        List<File> trashed = getTrashFilesUseCase.execute(new GetTrashFilesQuery(user.getDomainUser().getId()));
+        return ResponseEntity.ok(GetFilesResponse.fromDomain(trashed));
     }
 }
-    

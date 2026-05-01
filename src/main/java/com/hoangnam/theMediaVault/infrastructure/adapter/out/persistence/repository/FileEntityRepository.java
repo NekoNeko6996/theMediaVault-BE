@@ -4,6 +4,7 @@ import com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.entity.
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,9 +21,17 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
     // =========================================================================================
     // NHÓM ĐỌC DỮ LIỆU (@Query)
     // =========================================================================================
-    @Query("SELECT f FROM FileEntity f WHERE f.name = :name "
-            + "AND ((:parentId IS NULL AND f.parent.id IS NULL) OR (f.parent.id = :parentId)) "
-            + "AND f.owner.id = :ownerId")
+    @EntityGraph(attributePaths = {"owner"})
+    @Override
+    Optional<FileEntity> findById(String id);
+    
+    @Query("""
+           SELECT f FROM FileEntity f 
+           JOIN FETCH f.owner 
+           WHERE f.name = :name
+           AND ((:parentId IS NULL AND f.parent.id IS NULL) OR (f.parent.id = :parentId))
+           AND f.owner.id = :ownerId
+           """)
     Optional<FileEntity> findByNameAndParentAndOwner(
             @Param("name") String name,
             @Param("parentId") String parentId,
@@ -33,6 +42,7 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
 
     @Query("""
            SELECT f FROM FileEntity f 
+           JOIN FETCH f.owner 
            WHERE (:parentId IS NULL AND f.parent.id IS NULL OR f.parent.id = :parentId) 
            AND f.owner.id = :ownerId AND f.isTrashed = false
            """)
@@ -84,7 +94,6 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
      */
     @Query(value = """
                    SELECT f.id FROM FileEntity f
-                   JOIN FETCH f.owner 
                    WHERE f.owner.id = :ownerId AND f.id IN :fileIds
                    """)
     List<String> findExistingAndOnerFilesUsingOwnerIdAndFileIds(
@@ -92,18 +101,22 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
             @Param("fileIds") List<String> fileIds);
 
     @Query(value = """
-                   SELECT Count(f) > 0 FROM FileEntity f
-                   WHERE f.parentId = :parentId AND f.name = :name AND f.extension = :extension
+                   SELECT COUNT(f) > 0 FROM FileEntity f
+                   WHERE ((:parentId IS NULL AND f.parent.id IS NULL) OR (f.parent.id = :parentId)) 
+                   AND f.name = :name AND f.extension = :extension
                    """)
     boolean findExistsByParentIdAndNameAndExtension(
             @Param("parentId") String parentId,
             @Param("name") String name,
             @Param("extension") String extension);
 
-    @Query("SELECT f FROM FileEntity f WHERE f.id = :fileId AND f.owner.id = :ownerId")
+    @Query("SELECT f FROM FileEntity f JOIN FETCH f.owner WHERE f.id = :fileId AND f.owner.id = :ownerId")
     Optional<FileEntity> findByIdAndOwnerId(
             @Param("fileId") String fileId,
             @Param("ownerId") String ownerId);
+    
+    @Query("SELECT f FROM FileEntity f JOIN FETCH f.owner WHERE f.owner.id = :ownerId AND f.isTrashed = true")
+    List<FileEntity> findAllTrashFilesByOwnerId(@Param("ownerId") String ownerId);
 
     // =========================================================================================
     // NHÓM GHI/CẬP NHẬT DỮ LIỆU (@Modifying + @Transactional)

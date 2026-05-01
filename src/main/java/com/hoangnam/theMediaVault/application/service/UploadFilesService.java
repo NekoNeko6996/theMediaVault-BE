@@ -3,8 +3,8 @@ package com.hoangnam.theMediaVault.application.service;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.UploadFilesCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedFileUploadsResult;
 import com.hoangnam.theMediaVault.application.port.in.UploadFilesUseCase;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.UploadError;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.UploadItem;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.UploadError;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.UploadItem;
 import com.hoangnam.theMediaVault.application.port.out.FileAndUserTransactionPort;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
 import com.hoangnam.theMediaVault.application.port.out.StoragePort;
@@ -49,7 +49,7 @@ public class UploadFilesService implements UploadFilesUseCase {
             try {
                 // kiểm tra xem file này có size hợp lệ không
                 if(item.getSize() != item.getApprovedSize()) {
-                    throw new DomainException("Invalid upload token");
+                    throw new DomainException("Invalid file size.");
                 }
                 
                 // kiểm tra xem có đủ dung lượng để tải file này lên hay không
@@ -61,7 +61,8 @@ public class UploadFilesService implements UploadFilesUseCase {
                 
                 String id = UUID.randomUUID().toString();
                 String storgePath = owner.getRootDir() + id + extension;
-                String fileHash = storagePort.upload(storgePath, item.getInputStream(), item.getSize(), item.getContentType());
+                String rawStorageHash = storagePort.upload(storgePath, item.getInputStream(), item.getSize(), item.getContentType());
+                String fileHash = rawStorageHash.replaceAll("^\"|\"$", "");
                 
                 if(!item.getApprovedHash().equals(fileHash)) {
                     storagePort.delete(storgePath);

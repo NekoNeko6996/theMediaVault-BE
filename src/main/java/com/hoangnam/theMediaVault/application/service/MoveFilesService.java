@@ -2,7 +2,7 @@ package com.hoangnam.theMediaVault.application.service;
 
 import com.hoangnam.theMediaVault.application.port.in.MoveFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.MoveFilesCommand;
-import com.hoangnam.theMediaVault.application.port.in.dto.list_object.FileIdAndReason;
+import com.hoangnam.theMediaVault.application.port.in.dto.objects.FileIdAndReason;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedMoveFilesResult;
 import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
 import com.hoangnam.theMediaVault.domain.exception.DomainException;
