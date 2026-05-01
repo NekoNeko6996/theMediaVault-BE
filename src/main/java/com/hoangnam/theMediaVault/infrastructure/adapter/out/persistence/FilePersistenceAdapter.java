@@ -4,7 +4,6 @@ import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
 import com.hoangnam.theMediaVault.domain.model.File;
 import com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.mapper.FileMapper;
 import com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.repository.FileEntityRepository;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -60,6 +59,11 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     @Override
     public void restoreAllFromTrash(List<String> fileIds) {
         fileEntityRepository.restoreAll(fileIds);
+    }
+    
+    @Override
+    public void deleteByIdIn(List<String> fileIds) {
+        fileEntityRepository.deleteByIdIn(fileIds);
     }
 
 
@@ -118,6 +122,21 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     @Override
     public List<File> findAllTrashFilesByOwnerId(String ownerId) {
         return fileEntityRepository.findAllTrashFilesByOwnerId(ownerId).stream().map(fileMapper::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
+    public int countByStoragePath(String storagePath) {
+        return fileEntityRepository.countByStoragePath(storagePath);
+    }
+
+    @Override
+    public List<File> findAllStarredFiles(String ownerId) {
+        return fileEntityRepository.findAllStarredFiles(ownerId).stream().map(fileMapper::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<File> findFilesLikeName(String ownerId, String keyword) {
+        return fileEntityRepository.findFilesLikeName(ownerId, keyword).stream().map(fileMapper::toDomain).collect(Collectors.toList());
     }
     
     

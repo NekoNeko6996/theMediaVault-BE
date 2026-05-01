@@ -24,7 +24,7 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
     @EntityGraph(attributePaths = {"owner"})
     @Override
     Optional<FileEntity> findById(String id);
-    
+
     @Query("""
            SELECT f FROM FileEntity f 
            JOIN FETCH f.owner 
@@ -114,9 +114,28 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
     Optional<FileEntity> findByIdAndOwnerId(
             @Param("fileId") String fileId,
             @Param("ownerId") String ownerId);
-    
+
     @Query("SELECT f FROM FileEntity f JOIN FETCH f.owner WHERE f.owner.id = :ownerId AND f.isTrashed = true")
     List<FileEntity> findAllTrashFilesByOwnerId(@Param("ownerId") String ownerId);
+
+    @Query("SELECT Count(f) FROM FileEntity f WHERE f.storagePath = :storagePath")
+    int countByStoragePath(@Param("storagePath") String storagePath);
+
+    @Query("""
+           SELECT f FROM FileEntity f 
+           JOIN FETCH f.owner 
+           WHERE f.owner.id = :ownerId AND f.isStarred = true AND f.isTrashed = false
+           ORDER BY f.createAt DESC
+           """)
+    List<FileEntity> findAllStarredFiles(@Param("ownerId") String ownerId);
+
+    @Query("""
+           SELECT f FROM FileEntity f 
+           JOIN FETCH f.owner 
+           WHERE f.owner.id = :ownerId AND f.isTrashed = false AND LOWER(f.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           ORDER BY f.name ASC
+           """)
+    List<FileEntity> findFilesLikeName(@Param("ownerId") String ownerId, @Param("keyword") String keyword);
 
     // =========================================================================================
     // NHÓM GHI/CẬP NHẬT DỮ LIỆU (@Modifying + @Transactional)

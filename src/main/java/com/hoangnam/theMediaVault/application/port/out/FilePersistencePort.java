@@ -23,7 +23,7 @@ public interface FilePersistencePort {
     void moveFilesToNewDir(List<String> fileIds, String newParentFolderId);
     void renameAndMove(String idToMove, String newUniqueName, String targetParentId);
     void toggleStarred(String fileId);
-        
+    void deleteByIdIn(List<String> fileIds);
     
     // query
     Optional<File> findById(String id);
@@ -36,6 +36,9 @@ public interface FilePersistencePort {
     boolean findExistsByParentIdAndNameAndExtension(String parentId, String name, String extension);
     Optional<File> findByIdAndOwnerId(String fileId, String ownerId);
     List<File> findAllTrashFilesByOwnerId(String ownerId);
+    int countByStoragePath(String storagePath);
+    List<File> findAllStarredFiles(String ownerId);
+    List<File> findFilesLikeName(String ownerId, String keyword);
     
     /**
      * Tìm và trả về 1 danh sách bao gồm các entity có id được truyền vào cũng với các file or folder con bên trong

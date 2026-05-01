@@ -24,15 +24,21 @@ import com.hoangnam.theMediaVault.application.service.UploadFilesService;
 import com.hoangnam.theMediaVault.application.port.out.UserPort;
 import com.hoangnam.theMediaVault.application.service.CheckFilesCanUploadService;
 import com.hoangnam.theMediaVault.application.port.in.CheckFilesCanUploadUseCase;
+import com.hoangnam.theMediaVault.application.port.in.GetAllStarredFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetDownloadUrlUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetTrashFilesUseCase;
+import com.hoangnam.theMediaVault.application.port.in.HardDeleteFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.MoveFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.RestoreFilesFromTrashUseCase;
+import com.hoangnam.theMediaVault.application.port.in.SearchFilesByKeywordUseCase;
 import com.hoangnam.theMediaVault.application.port.in.ToggleStarredFileUseCase;
+import com.hoangnam.theMediaVault.application.service.GetAllStarredFilesService;
 import com.hoangnam.theMediaVault.application.service.GetDownloadUrlService;
 import com.hoangnam.theMediaVault.application.service.GetTrashFilesService;
+import com.hoangnam.theMediaVault.application.service.HardDeleteFilesService;
 import com.hoangnam.theMediaVault.application.service.MoveFilesService;
 import com.hoangnam.theMediaVault.application.service.RestoreFilesFromTrashService;
+import com.hoangnam.theMediaVault.application.service.SearchFilesByKeywordService;
 import com.hoangnam.theMediaVault.application.service.ToggleStarredFileService;
 
 @Configuration
@@ -73,7 +79,6 @@ public class BeanConfig {
         return new RenameFileService(filePersistencePort);
     }
     
-    
     @Bean
     public CheckFilesCanUploadUseCase checkFilesExistsUseCase(FilePersistencePort filePersistencePort, UserPort userPort) {
         return new CheckFilesCanUploadService(filePersistencePort, userPort);
@@ -102,6 +107,21 @@ public class BeanConfig {
     @Bean
     public GetTrashFilesUseCase getTrashFilesUseCase(FilePersistencePort filePersistencePort) {
         return new GetTrashFilesService(filePersistencePort);
+    }
+    
+    @Bean
+    public HardDeleteFilesUseCase hardDeleteFilesUseCase(FilePersistencePort filePersistencePort, StoragePort storagePort, FileAndUserTransactionPort fileAndUserTransactionPort) {
+        return new HardDeleteFilesService(storagePort, filePersistencePort, fileAndUserTransactionPort);
+    }
+    
+    @Bean
+    public GetAllStarredFilesUseCase getAllStarredFilesUseCase(FilePersistencePort filePersistencePort) {
+        return new GetAllStarredFilesService(filePersistencePort);
+    }
+    
+    @Bean
+    public SearchFilesByKeywordUseCase searchFilesByKeywordUseCase(FilePersistencePort filePersistencePort) {
+        return new SearchFilesByKeywordService(filePersistencePort);
     }
     
     @Bean

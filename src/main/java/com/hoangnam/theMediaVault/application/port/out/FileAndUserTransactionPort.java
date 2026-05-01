@@ -9,4 +9,5 @@ import java.util.List;
  */
 public interface FileAndUserTransactionPort {
     void saveFilesAndUpdateStorage(String ownerId, List<File> files, long sizeDelta);
+    void deleteFilesAndRefundQuotaStorage(String ownerId, List<File> files, long refundQuota);
 }

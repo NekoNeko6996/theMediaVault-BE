@@ -26,4 +26,11 @@ public class FileAndUserTransactionAdapter implements FileAndUserTransactionPort
         fileEntityRepository.saveAll(files.stream().map(fileMapper::toEntity).collect(Collectors.toList()));
     }
 
+    @Override
+    @Transactional
+    public void deleteFilesAndRefundQuotaStorage(String ownerId, List<File> files, long refundQuota) {
+        userRepository.updateUsedStorage(ownerId, -refundQuota);
+        fileEntityRepository.deleteAll(files.stream().map(fileMapper::toEntity).collect(Collectors.toList()));
+    }
+
 }
