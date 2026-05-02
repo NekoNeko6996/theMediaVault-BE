@@ -22,5 +22,9 @@ public class HardDeleteFilesCommand implements ApplicationDTOCommand {
         if(this.fileIdsToDelete == null || this.fileIdsToDelete.isEmpty()) {
             throw new DomainException("Require at least one file to move it to trash.");
         }
+        
+        for(String id : this.fileIdsToDelete) {
+            if(id == null || id.trim().isEmpty()) throw new DomainException("Invalid Ids.");
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.hoangnam.theMediaVault.application.port.out;
 
 import com.hoangnam.theMediaVault.domain.model.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -32,6 +33,7 @@ public interface FilePersistencePort {
     List<File> findByParentIdAndOwnerId(String parentId, String ownerId);
     List<File> findExistingFiles(String ownerId, List<String> hashes);
     List<File> findByOwnerAndFileIds(String ownerId, List<String> fileId);
+    List<File> findByOwnerAndFileIdsIncludeTrash(String ownerId, List<String> fileId);
     List<String> findExistingAndOnerFilesUsingOwnerIdAndFileIds(String ownerId, List<String> FileIds);
     boolean findExistsByParentIdAndNameAndExtension(String parentId, String name, String extension);
     Optional<File> findByIdAndOwnerId(String fileId, String ownerId);
@@ -39,6 +41,7 @@ public interface FilePersistencePort {
     int countByStoragePath(String storagePath);
     List<File> findAllStarredFiles(String ownerId);
     List<File> findFilesLikeName(String ownerId, String keyword);
+    Map<String, Long> countByStoragePaths(List<String> storagePaths);
     
     /**
      * Tìm và trả về 1 danh sách bao gồm các entity có id được truyền vào cũng với các file or folder con bên trong

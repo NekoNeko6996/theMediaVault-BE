@@ -23,7 +23,6 @@ public class HardDeleteFilesService implements HardDeleteFilesUseCase {
     private final FileAndUserTransactionPort fileAndUserTransactionPort;
     
     @Override
-    @Transactional
     public FailedHardDeleteFilesResult execute(HardDeleteFilesCommand command) {
         command.validate();
         
@@ -36,7 +35,7 @@ public class HardDeleteFilesService implements HardDeleteFilesUseCase {
         }
 
         // 2. Load toàn bộ entity lên bằng 1 câu SELECT duy nhất
-        List<File> allItemsToDelete = filePersistencePort.findByOwnerAndFileIds(command.getOwnerId(), fileAndAllChilds);
+        List<File> allItemsToDelete = filePersistencePort.findByOwnerAndFileIdsIncludeTrash(command.getOwnerId(), fileAndAllChilds);
         
         List<File> successfullyProcessedItems = new ArrayList<>();
         long refundQuota = 0;

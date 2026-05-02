@@ -4,7 +4,9 @@ import com.hoangnam.theMediaVault.application.port.out.FilePersistencePort;
 import com.hoangnam.theMediaVault.domain.model.File;
 import com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.mapper.FileMapper;
 import com.hoangnam.theMediaVault.infrastructure.adapter.out.persistence.repository.FileEntityRepository;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -138,6 +140,23 @@ public class FilePersistenceAdapter implements FilePersistencePort {
     public List<File> findFilesLikeName(String ownerId, String keyword) {
         return fileEntityRepository.findFilesLikeName(ownerId, keyword).stream().map(fileMapper::toDomain).collect(Collectors.toList());
     }
-    
-    
+
+    @Override
+    public List<File> findByOwnerAndFileIdsIncludeTrash(String ownerId, List<String> fileId) {
+        return fileEntityRepository.findByOwnerAndFileIdsIncludeTrash(ownerId, fileId).stream().map(fileMapper::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, Long> countByStoragePaths(List<String> storagePaths) {
+        if(storagePaths == null || storagePaths.isEmpty()) return new HashMap<>();
+        
+        List<Object[]> results = fileEntityRepository.countByStoragePathsIn(storagePaths);
+        Map<String, Long> countMap = new HashMap<>();
+        
+        for(Object[] row : results) {
+            countMap.put((String) row[0], (Long) row[1]);
+        }
+        
+        return countMap;
+    }
 }

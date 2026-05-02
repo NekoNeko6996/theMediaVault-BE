@@ -35,16 +35,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.hoangnam.theMediaVault.application.port.in.CheckFilesCanUploadUseCase;
+import com.hoangnam.theMediaVault.application.port.in.DuplicateFilesUseCase;
+import com.hoangnam.theMediaVault.application.port.in.EmptyTrashUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetAllStarredFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetDownloadUrlUseCase;
+import com.hoangnam.theMediaVault.application.port.in.GetFileInfoUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetTrashFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.HardDeleteFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.MoveFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.RestoreFilesFromTrashUseCase;
 import com.hoangnam.theMediaVault.application.port.in.SearchFilesByKeywordUseCase;
 import com.hoangnam.theMediaVault.application.port.in.ToggleStarredFileUseCase;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.DuplicateFilesCommand;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.EmptyTrashCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.GetAllStarredFilesQuery;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.GetDowloadUrlQuery;
+import com.hoangnam.theMediaVault.application.port.in.dto.command.GetFileInfoQuery;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.GetTrashFilesQuery;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.HardDeleteFilesCommand;
 import com.hoangnam.theMediaVault.application.port.in.dto.command.MoveFilesCommand;
@@ -56,10 +62,12 @@ import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedHardDelet
 import com.hoangnam.theMediaVault.application.port.in.dto.result.FailedMoveFilesResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.GetDownLoadUrlResult;
 import com.hoangnam.theMediaVault.application.port.in.dto.result.ToggleStarredFileResult;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.DuplicateFilesRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.HardDeleteFilesRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.MoveFilesRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.request.RestoreFilesFromTrashRequest;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.CheckFilesCanUploadResponse;
+import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.GetFileResponse;
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.OnlyMessageResponse;
 import com.hoangnam.theMediaVault.infrastructure.service.JWTService;
 import io.jsonwebtoken.JwtException;
@@ -86,6 +94,9 @@ public class FileController {
     private final HardDeleteFilesUseCase hardDeleteFilesUseCase;
     private final GetAllStarredFilesUseCase getAllStarredFilesUseCase;
     private final SearchFilesByKeywordUseCase searchFilesByKeywordUseCase;
+    private final DuplicateFilesUseCase duplicateFilesUseCase;
+    private final EmptyTrashUseCase emptyTrashUseCase;
+    private final GetFileInfoUseCase getFileInfoUseCase;
     
     private final JWTService jwtService;
 
@@ -265,7 +276,7 @@ public class FileController {
         String cleanKeyword = (keyword != null)? keyword.trim() : "";
         cleanKeyword = cleanKeyword.replace("%", "").replace("_", "");
         if (cleanKeyword.isEmpty()) {
-            return ResponseEntity.badRequest().body("Từ khóa tìm kiếm không hợp lệ.");
+            return ResponseEntity.badRequest().body("Invalid Keyword.");
         }
         
         SearchFilesByKeywordQuery query = new SearchFilesByKeywordQuery(
@@ -275,5 +286,28 @@ public class FileController {
         
         List<File> files = searchFilesByKeywordUseCase.execute(query);
         return ResponseEntity.ok(GetFilesResponse.fromDomain(files));
+    }
+    
+    @PostMapping("/empty/trash")
+    public ResponseEntity<?> emptyTrash(@AuthenticationPrincipal CustomUserDetail user) {
+        emptyTrashUseCase.execute(new EmptyTrashCommand(user.getDomainUser().getId()));
+        return ResponseEntity.ok(new OnlyMessageResponse("Empty trash success."));
+    }
+    
+    @GetMapping("/get/info/{fileId}")
+    public ResponseEntity<?> getFileInfo(@AuthenticationPrincipal CustomUserDetail user, @PathVariable("fileId") String fileId) {
+        File file = getFileInfoUseCase.execute(new GetFileInfoQuery(user.getDomainUser().getId(), fileId));
+        return ResponseEntity.ok(GetFileResponse.fromDomain(file));
+    }
+    
+    @PostMapping("/duplicate") 
+    public ResponseEntity<?> duplicateFiles(@AuthenticationPrincipal CustomUserDetail user, @RequestBody DuplicateFilesRequest request) {
+        duplicateFilesUseCase.execute(new DuplicateFilesCommand(
+                user.getDomainUser().getId(), 
+                request.getNewParentId(), 
+                request.getOldParentId(), 
+                request.getFileIds()
+        ));
+        return ResponseEntity.ok(new OnlyMessageResponse("Success."));
     }
 }

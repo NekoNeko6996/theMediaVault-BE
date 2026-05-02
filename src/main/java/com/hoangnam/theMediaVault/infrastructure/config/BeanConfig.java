@@ -24,16 +24,22 @@ import com.hoangnam.theMediaVault.application.service.UploadFilesService;
 import com.hoangnam.theMediaVault.application.port.out.UserPort;
 import com.hoangnam.theMediaVault.application.service.CheckFilesCanUploadService;
 import com.hoangnam.theMediaVault.application.port.in.CheckFilesCanUploadUseCase;
+import com.hoangnam.theMediaVault.application.port.in.DuplicateFilesUseCase;
+import com.hoangnam.theMediaVault.application.port.in.EmptyTrashUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetAllStarredFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetDownloadUrlUseCase;
+import com.hoangnam.theMediaVault.application.port.in.GetFileInfoUseCase;
 import com.hoangnam.theMediaVault.application.port.in.GetTrashFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.HardDeleteFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.MoveFilesUseCase;
 import com.hoangnam.theMediaVault.application.port.in.RestoreFilesFromTrashUseCase;
 import com.hoangnam.theMediaVault.application.port.in.SearchFilesByKeywordUseCase;
 import com.hoangnam.theMediaVault.application.port.in.ToggleStarredFileUseCase;
+import com.hoangnam.theMediaVault.application.service.DuplicateFilesService;
+import com.hoangnam.theMediaVault.application.service.EmptyTrashService;
 import com.hoangnam.theMediaVault.application.service.GetAllStarredFilesService;
 import com.hoangnam.theMediaVault.application.service.GetDownloadUrlService;
+import com.hoangnam.theMediaVault.application.service.GetFileInfoService;
 import com.hoangnam.theMediaVault.application.service.GetTrashFilesService;
 import com.hoangnam.theMediaVault.application.service.HardDeleteFilesService;
 import com.hoangnam.theMediaVault.application.service.MoveFilesService;
@@ -122,6 +128,21 @@ public class BeanConfig {
     @Bean
     public SearchFilesByKeywordUseCase searchFilesByKeywordUseCase(FilePersistencePort filePersistencePort) {
         return new SearchFilesByKeywordService(filePersistencePort);
+    }
+    
+    @Bean
+    public EmptyTrashUseCase emptyTrashUseCase(FilePersistencePort filePersistencePort, StoragePort storagePort, FileAndUserTransactionPort fileAndUserTransactionPort) {
+        return new EmptyTrashService(storagePort, filePersistencePort, fileAndUserTransactionPort);
+    }
+    
+    @Bean 
+    public GetFileInfoUseCase getFileInfoUseCase(FilePersistencePort filePersistencePort) {
+        return new GetFileInfoService(filePersistencePort);
+    }
+    
+    @Bean
+    public DuplicateFilesUseCase duplicateFilesUseCase(FilePersistencePort filePersistencePort, FileAndUserTransactionPort fileAndUserTransactionPort) {
+        return new DuplicateFilesService(filePersistencePort, fileAndUserTransactionPort);
     }
     
     @Bean

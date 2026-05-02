@@ -86,6 +86,15 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
             @Param("ownerId") String ownerId,
             @Param("fileIds") List<String> fileIds);
 
+    @Query(value = """
+                   SELECT f FROM FileEntity f 
+                   JOIN FETCH f.owner 
+                   WHERE f.owner.id = :ownerId AND f.id IN :fileIds
+                   """)
+    List<FileEntity> findByOwnerAndFileIdsIncludeTrash(
+            @Param("ownerId") String ownerId,
+            @Param("fileIds") List<String> fileIds);
+
     /**
      *
      * @param ownerId
@@ -110,9 +119,9 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
             @Param("name") String name,
             @Param("extension") String extension);
 
-    @Query("SELECT f FROM FileEntity f JOIN FETCH f.owner WHERE f.id = :fileId AND f.owner.id = :ownerId")
+    @Query("SELECT f FROM FileEntity f JOIN FETCH f.owner LEFT JOIN FETCH f.parent WHERE f.id = :fileId AND f.owner.id = :ownerId")
     Optional<FileEntity> findByIdAndOwnerId(
-            @Param("fileId") String fileId,
+            @Param("fileId") String fileId, 
             @Param("ownerId") String ownerId);
 
     @Query("SELECT f FROM FileEntity f JOIN FETCH f.owner WHERE f.owner.id = :ownerId AND f.isTrashed = true")
@@ -136,6 +145,9 @@ public interface FileEntityRepository extends JpaRepository<FileEntity, String> 
            ORDER BY f.name ASC
            """)
     List<FileEntity> findFilesLikeName(@Param("ownerId") String ownerId, @Param("keyword") String keyword);
+
+    @Query("SELECT f.storagePath, COUNT(f) FROM FileEntity f WHERE f.storagePath IN :paths GROUP BY f.storagePath")
+    List<Object[]> countByStoragePathsIn(@Param("paths") List<String> paths);
 
     // =========================================================================================
     // NHÓM GHI/CẬP NHẬT DỮ LIỆU (@Modifying + @Transactional)
