@@ -1,0 +1,81 @@
+@startuml
+title Sequence Diagram - Login Use Case
+
+actor Client
+participant "AuthController" as Controller
+participant "LoginCommand" as Command
+participant "LoginUserService" as Service
+participant "UserPort" as UserPort
+participant "PasswordEncoderPort" as PasswordPort
+participant "User" as UserDomain
+participant "JWTService" as JWT
+
+Client -> Controller: POST /api/v1/auth/login\n(LoginRequest)
+activate Controller
+
+Controller -> Command **: new(username, password)
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+Service -> UserPort: findByUsername(username)
+activate UserPort
+UserPort --> Service: Optional<User>
+deactivate UserPort
+
+alt User not found
+    Service -[#red]> Controller: throw DomainException\n("Invalid username or password.")
+else User found
+    Service -> PasswordPort: matches(rawPassword, user.getPasswordHash())
+    activate PasswordPort
+    PasswordPort --> Service: boolean (isMatch)
+    deactivate PasswordPort
+    
+    alt Password doesn't match
+        Service -[#red]> Controller: throw DomainException\n("Invalid username or password.")
+    else Password matches
+        Service -> UserDomain: isAvailable()
+        activate UserDomain
+        UserDomain --> Service: boolean (isAvailable)
+        deactivate UserDomain
+        
+        alt User suspended or deleted
+            Service -[#red]> Controller: throw DomainException\n("The user has been suspended or deleted.")
+        else User available
+            Service -> UserDomain: withLogin()
+            activate UserDomain
+            UserDomain --> Service: newUser
+            deactivate UserDomain
+            
+            Service -> UserPort: save(newUser)
+            activate UserPort
+            UserPort --> Service: void
+            deactivate UserPort
+            
+            Service --> Controller: AuthenticatedIdentity
+        end
+    end
+end
+deactivate Service
+
+Controller -> JWT: generateToken(userId, expirationTime)
+activate JWT
+JWT --> Controller: token (String)
+deactivate JWT
+
+Controller -> JWT: extractExpiration(token)
+activate JWT
+JWT --> Controller: expiredIn (Date)
+deactivate JWT
+
+Controller --> Client: 201 Created\n(AuthenticatedResponse)
+deactivate Controller
+@enduml

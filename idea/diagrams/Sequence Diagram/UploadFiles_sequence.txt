@@ -1,0 +1,80 @@
+@startuml
+title Sequence Diagram - Upload Files Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "UploadFilesCommand" as Command
+participant "UploadFilesService" as Service
+participant "UserPort" as UserPort
+participant "FilePersistencePort" as FilePort
+participant "StoragePort" as StoragePort
+participant "FileAndUserTransactionPort" as TransactionPort
+participant "File" as FileDomain
+
+Client -> Controller: POST /api/v1/files/uploads\n(MultipartFiles + Tokens)
+activate Controller
+
+note over Controller: Extract info, validate tokens
+
+Controller -> Command **: builder()...build()
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+Service -> UserPort: findById(ownerId)
+activate UserPort
+UserPort --> Service: Optional<User> (owner)
+deactivate UserPort
+
+alt parentId != null
+    Service -> FilePort: findById(parentId)
+    activate FilePort
+    FilePort --> Service: Optional<File> (parent)
+    deactivate FilePort
+end
+
+loop for each item in command.getItems()
+    alt Invalid size or Storage Limit Reached
+        Service -> Service: error.add(UploadError)
+    else valid
+        Service -> StoragePort: upload(storagePath, inputStream, size, contentType)
+        activate StoragePort
+        StoragePort --> Service: String (rawStorageHash)
+        deactivate StoragePort
+        
+        alt token hash mismatch
+            Service -> StoragePort: delete(storagePath)
+        else match
+            Service -> FileDomain: createFile(...)
+            activate FileDomain
+            FileDomain --> Service: File
+            deactivate FileDomain
+        end
+    end
+end
+
+alt files is not empty
+    Service -> TransactionPort: saveFilesAndUpdateStorage(ownerId, files, sizeDelta)
+    activate TransactionPort
+    TransactionPort --> Service: void
+    deactivate TransactionPort
+    
+    alt DB error
+        note over Service: Rollback: Delete uploaded files from MinIO
+    end
+end
+
+Service --> Controller: FailedFileUploadsResult
+deactivate Service
+
+Controller --> Client: 200 OK\n(FailedFileUploadsResult)
+deactivate Controller
+@enduml

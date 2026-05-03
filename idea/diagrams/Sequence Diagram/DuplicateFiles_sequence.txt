@@ -1,0 +1,58 @@
+@startuml
+title Sequence Diagram - Duplicate Files Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "DuplicateFilesCommand" as Command
+participant "DuplicateFilesService" as Service
+participant "FilePersistencePort" as FilePort
+participant "FileAndUserTransactionPort" as TransactionPort
+
+Client -> Controller: POST /api/v1/files/duplicate\n(DuplicateFilesRequest)
+activate Controller
+
+Controller -> Command **: new(...)
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+alt targetParentId != null
+    Service -> FilePort: findById(targetParentId)
+    activate FilePort
+    FilePort --> Service: Optional<File> (targetParent)
+    deactivate FilePort
+end
+
+Service -> FilePort: findByOwnerAndFileIds(ownerId, fileIds)
+activate FilePort
+FilePort --> Service: List<File> (filesToCopy)
+deactivate FilePort
+
+alt filesToCopy is not empty
+    Service -> FilePort: findByParentIdAndOwnerId(targetParentId, ownerId)
+    activate FilePort
+    FilePort --> Service: List<File> (filesInNewDir)
+    deactivate FilePort
+    
+    note over Service: Map existing file names in target folder\nGenerate unique names for duplicates\nCreate new File instances
+    
+    Service -> TransactionPort: saveFilesAndUpdateStorage(ownerId, filesToDuplicate, sizeDelta)
+    activate TransactionPort
+    TransactionPort --> Service: void
+    deactivate TransactionPort
+end
+
+Service --> Controller: void
+deactivate Service
+
+Controller --> Client: 200 OK\n(OnlyMessageResponse)
+deactivate Controller
+@enduml

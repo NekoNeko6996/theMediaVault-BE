@@ -1,0 +1,56 @@
+@startuml
+title Sequence Diagram - Get Files Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "GetFilesQuery" as Query
+participant "GetFilesService" as Service
+participant "FilePersistencePort" as FilePort
+
+Client -> Controller: GET /api/v1/files/get/files/{parentId}
+activate Controller
+
+Controller -> Query **: new(ownerId, parentId)
+activate Query
+Query --> Controller: query
+deactivate Query
+
+Controller -> Service: execute(query)
+activate Service
+
+Service -> Query: validate()
+activate Query
+Query --> Service
+deactivate Query
+
+alt parentId != null
+    Service -> FilePort: findById(parentId)
+    activate FilePort
+    FilePort --> Service: Optional<File> (parent)
+    deactivate FilePort
+    
+    alt Parent not found
+        Service -[#red]> Controller: throw DomainException
+    else Parent found
+        Service -> FilePort: isOwner(parentId, ownerId)
+        activate FilePort
+        FilePort --> Service: boolean (isOwner)
+        deactivate FilePort
+        
+        alt Not owner
+            Service -[#red]> Controller: throw DomainException
+        end
+    end
+end
+
+Service -> FilePort: findByParentIdAndOwnerId(parentId, ownerId)
+activate FilePort
+FilePort --> Service: List<File>
+deactivate FilePort
+
+Service --> Controller: List<File>
+deactivate Service
+
+Controller --> Client: 200 OK\n(GetFilesResponse)
+deactivate Controller
+@enduml

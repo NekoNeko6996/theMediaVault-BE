@@ -1,0 +1,64 @@
+@startuml
+title Sequence Diagram - Hard Delete Files Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "HardDeleteFilesCommand" as Command
+participant "HardDeleteFilesService" as Service
+participant "FilePersistencePort" as FilePort
+participant "StoragePort" as StoragePort
+participant "FileAndUserTransactionPort" as TransactionPort
+
+Client -> Controller: POST /api/v1/files/delete\n(HardDeleteFilesRequest)
+activate Controller
+
+Controller -> Command **: new(ownerId, fileIdsToDelete)
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+Service -> FilePort: findAllChildIds(fileIdsToDelete)
+activate FilePort
+FilePort --> Service: List<String> (fileAndAllChilds)
+deactivate FilePort
+
+alt fileAndAllChilds is not empty
+    Service -> FilePort: findByOwnerAndFileIdsIncludeTrash(...)
+    activate FilePort
+    FilePort --> Service: List<File> (allItemsToDelete)
+    deactivate FilePort
+    
+    loop for each item in allItemsToDelete
+        alt item.isFile() && countByStoragePath <= 1
+            Service -> FilePort: countByStoragePath(storagePath)
+            activate FilePort
+            FilePort --> Service: long (count)
+            deactivate FilePort
+            
+            Service -> StoragePort: delete(storagePath)
+            activate StoragePort
+            StoragePort --> Service: void
+            deactivate StoragePort
+        end
+    end
+    
+    Service -> TransactionPort: deleteFilesAndRefundQuotaStorage(...)
+    activate TransactionPort
+    TransactionPort --> Service: void
+    deactivate TransactionPort
+end
+
+Service --> Controller: FailedHardDeleteFilesResult
+deactivate Service
+
+Controller --> Client: 200 OK\n(FailedHardDeleteFilesResult)
+deactivate Controller
+@enduml

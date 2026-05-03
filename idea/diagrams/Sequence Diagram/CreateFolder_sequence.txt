@@ -1,0 +1,73 @@
+@startuml
+title Sequence Diagram - Create Folder Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "CreateFolderCommand" as Command
+participant "CreateFolderService" as Service
+participant "UserPort" as UserPort
+participant "FilePersistencePort" as FilePort
+participant "File" as FileDomain
+
+Client -> Controller: POST /api/v1/files/create/folder\n(CreateFolderRequest)
+activate Controller
+
+Controller -> Command **: builder()...build()
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+Service -> UserPort: findById(ownerId)
+activate UserPort
+UserPort --> Service: Optional<User>
+deactivate UserPort
+
+alt User not found
+    Service -[#red]> Controller: throw DomainException("User not found.")
+else User found
+    
+    alt parentId != null
+        Service -> FilePort: findById(parentId)
+        activate FilePort
+        FilePort --> Service: Optional<File> (parent)
+        deactivate FilePort
+        
+        alt Parent not found or Invalid
+            Service -[#red]> Controller: throw DomainException
+        end
+    end
+    
+    Service -> FilePort: findExistsByNameAndParentAndOwner(...)
+    activate FilePort
+    FilePort --> Service: boolean (exists)
+    deactivate FilePort
+    
+    alt Folder already exists
+        Service -[#red]> Controller: throw DomainException("Folder name already in this directory.")
+    else Folder not exists
+        Service -> FileDomain: createFolder(owner, parent, folderName, storagePath)
+        activate FileDomain
+        FileDomain --> Service: newFolder
+        deactivate FileDomain
+        
+        Service -> FilePort: save(newFolder)
+        activate FilePort
+        FilePort --> Service: void
+        deactivate FilePort
+        
+        Service --> Controller: CreateFolderResult
+    end
+end
+deactivate Service
+
+Controller --> Client: 200 OK\n(CreateFolderResult)
+deactivate Controller
+@enduml

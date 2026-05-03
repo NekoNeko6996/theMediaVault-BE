@@ -13,6 +13,9 @@ public class GetDowloadUrlQuery implements ApplicationDTOCommand {
     String ownerId;
     String fileId;
     
+    // type = preview to see this file, = download to only download file.
+    String type;
+    
     @Override
     public void validate() {
         if(ownerId == null || ownerId.trim().isEmpty()) {

@@ -249,8 +249,8 @@ public class FileController {
     }
     
     @GetMapping("/download/{fileId}")
-    public ResponseEntity<?> getDownLoadUrl(@AuthenticationPrincipal CustomUserDetail user, @PathVariable("fileId") String fileId) {
-        GetDownLoadUrlResult result = getDownloadUrlUseCase.execute(new GetDowloadUrlQuery(user.getDomainUser().getId(), fileId));
+    public ResponseEntity<?> getDownLoadUrl(@AuthenticationPrincipal CustomUserDetail user, @PathVariable("fileId") String fileId, @RequestParam("type") String type) {
+        GetDownLoadUrlResult result = getDownloadUrlUseCase.execute(new GetDowloadUrlQuery(user.getDomainUser().getId(), fileId, type));
         return ResponseEntity.ok(result);
     }
     

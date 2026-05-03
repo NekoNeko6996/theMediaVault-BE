@@ -1,0 +1,52 @@
+@startuml
+title Sequence Diagram - Rename File Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "RenameFileCommand" as Command
+participant "RenameFileService" as Service
+participant "FilePersistencePort" as FilePort
+
+Client -> Controller: POST /api/v1/files/rename\n(RenameFileRequest)
+activate Controller
+
+Controller -> Command **: new(fileId, ownerId, newName)
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+Service -> FilePort: findById(fileId)
+activate FilePort
+FilePort --> Service: Optional<File> (file)
+deactivate FilePort
+
+alt File found and is owner
+    Service -> FilePort: findExistsByParentIdAndNameAndExtension(...)
+    activate FilePort
+    FilePort --> Service: boolean (exists)
+    deactivate FilePort
+    
+    alt File name already exists
+        Service -[#red]> Controller: throw DomainException
+    else valid
+        Service -> FilePort: rename(fileId, newName)
+        activate FilePort
+        FilePort --> Service: void
+        deactivate FilePort
+    end
+end
+
+Service --> Controller: void
+deactivate Service
+
+Controller --> Client: 200 OK\n(OnlyMessageResponse)
+deactivate Controller
+@enduml

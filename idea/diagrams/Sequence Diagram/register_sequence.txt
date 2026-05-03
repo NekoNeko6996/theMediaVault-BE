@@ -1,0 +1,77 @@
+@startuml
+title Sequence Diagram - Register Use Case
+
+actor Client
+participant "AuthController" as Controller
+participant "RegisterCommand" as Command
+participant "RegisterUserService" as Service
+participant "UserPort" as UserPort
+participant "PasswordEncoderPort" as PasswordPort
+participant "User" as UserDomain
+participant "JWTService" as JWT
+
+Client -> Controller: POST /api/v1/auth/register\n(RegisterRequest)
+activate Controller
+
+Controller -> Command **: new(username, email, password)
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+Service -> UserPort: existsByEmail(email)
+activate UserPort
+UserPort --> Service: boolean (isEmailExist)
+deactivate UserPort
+
+alt Email already exists
+    Service -[#red]> Controller: throw DomainException\n("The email already exists.")
+else Email not exists
+    Service -> UserPort: existsByUserName(username)
+    activate UserPort
+    UserPort --> Service: boolean (isUsernameExist)
+    deactivate UserPort
+    
+    alt Username already exists
+        Service -[#red]> Controller: throw DomainException\n("The username already exists.")
+    else Username not exists
+        Service -> PasswordPort: encode(password)
+        activate PasswordPort
+        PasswordPort --> Service: String (hash)
+        deactivate PasswordPort
+        
+        Service -> UserDomain: create(username, email, hash, STORAGE_LIMIT)
+        activate UserDomain
+        UserDomain --> Service: user
+        deactivate UserDomain
+        
+        Service -> UserPort: save(user)
+        activate UserPort
+        UserPort --> Service: void
+        deactivate UserPort
+        
+        Service --> Controller: AuthenticatedIdentity
+    end
+end
+deactivate Service
+
+Controller -> JWT: generateToken(userId, expirationTime)
+activate JWT
+JWT --> Controller: token (String)
+deactivate JWT
+
+Controller -> JWT: extractExpiration(token)
+activate JWT
+JWT --> Controller: expiredIn (Date)
+deactivate JWT
+
+Controller --> Client: 201 Created\n(AuthenticatedResponse)
+deactivate Controller
+@enduml

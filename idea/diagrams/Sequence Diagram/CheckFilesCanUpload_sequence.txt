@@ -1,0 +1,56 @@
+@startuml
+title Sequence Diagram - Check Files Can Upload Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "CheckFilesCanUploadQuery" as Query
+participant "CheckFilesCanUploadService" as Service
+participant "UserPort" as UserPort
+participant "FilePersistencePort" as FilePort
+participant "JWTService" as JWT
+
+Client -> Controller: POST /api/v1/files/exists\n(CheckFilesCanUploadRequest)
+activate Controller
+
+Controller -> Query **: new(ownerId, request.getFilesHashAndSize())
+activate Query
+Query --> Controller: query
+deactivate Query
+
+Controller -> Service: execute(query)
+activate Service
+
+Service -> Query: validate()
+activate Query
+Query --> Service
+deactivate Query
+
+Service -> UserPort: findById(ownerId)
+activate UserPort
+UserPort --> Service: Optional<User>
+deactivate UserPort
+
+alt User not found
+    Service -[#red]> Controller: throw DomainException("User not found.")
+else User found
+    Service -> FilePort: findExistingFiles(ownerId, hashes)
+    activate FilePort
+    FilePort --> Service: List<File> (existingDbFiles)
+    deactivate FilePort
+    
+    note over Service: Check logic for existing files and storage limits\nto categorize into: existingFilesHash, canUploads, refuseFilesHash
+    
+    Service --> Controller: CheckFilesCanUploadResult
+end
+deactivate Service
+
+loop for each item in result.getCanUploads()
+    Controller -> JWT: generateToken(hash + "_" + size, expirationTime)
+    activate JWT
+    JWT --> Controller: token (String)
+    deactivate JWT
+end
+
+Controller --> Client: 200 OK\n(CheckFilesCanUploadResponse)
+deactivate Controller
+@enduml

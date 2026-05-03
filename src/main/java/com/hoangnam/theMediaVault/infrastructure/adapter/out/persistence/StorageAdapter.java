@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +29,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class StorageAdapter implements StoragePort {
-    
+
     private final MinioClient minioClient;
     @Value("${minio.bucket}")
     private String bucketName;
@@ -70,33 +72,34 @@ public class StorageAdapter implements StoragePort {
         try {
             minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(path).build());
             return true;
-        }
-        catch (ErrorResponseException  e) {
-            if ("NoSuchKey".equals(e.errorResponse().code()) || 
-                "NoSuchObject".equals(e.errorResponse().code())) {
+        } catch (ErrorResponseException e) {
+            if ("NoSuchKey".equals(e.errorResponse().code())
+                    || "NoSuchObject".equals(e.errorResponse().code())) {
                 return false;
             }
             throw new RuntimeException("Error occurred while checking object existence", e);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // Handle other potential SDK or network exceptions
             throw new RuntimeException("Unexpected error connecting to MinIO", e);
         }
     }
 
     @Override
-    public String getDownloadUrl(String path) {
+    public String getDownloadUrl(String path, String type) {
         try {
+            Map<String, String> reqParams = new HashMap<>();
+            type = type.equals("preview") ? "inline" : "attachment";
+            reqParams.put("response-content-disposition", type);
             return minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
-                    .method(Method.GET)
-                    .bucket(bucketName)
-                    .object(path)
-                    .expiry(downloadExpiration, TimeUnit.MINUTES)
-                    .build()
+                            .method(Method.GET)
+                            .bucket(bucketName)
+                            .object(path)
+                            .extraQueryParams(reqParams)
+                            .expiry(downloadExpiration, TimeUnit.MINUTES)
+                            .build()
             );
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error durring create dowload url for: " + path, e);
         }
     }
@@ -116,7 +119,7 @@ public class StorageAdapter implements StoragePort {
                             )
                             .build()
             );
-            
+
             minioClient.removeObject(RemoveObjectArgs.builder()
                     .bucket(bucketName)
                     .object(oldPath)

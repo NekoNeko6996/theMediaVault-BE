@@ -29,7 +29,7 @@ public class GetDownloadUrlService implements GetDownloadUrlUseCase {
         ).orElseThrow(() -> new DomainException("File not found or your don't have any permission to dowload this file."));
         
         try {
-            String url = storagePort.getDownloadUrl(tagetDowload.getStoragePath());
+            String url = storagePort.getDownloadUrl(tagetDowload.getStoragePath(), query.getType());
             return new GetDownLoadUrlResult(tagetDowload.getName(), tagetDowload.getExtension(), url);
         }
         catch(Exception e) {

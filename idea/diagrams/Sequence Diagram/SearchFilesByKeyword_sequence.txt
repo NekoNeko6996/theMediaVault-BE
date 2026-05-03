@@ -1,0 +1,36 @@
+@startuml
+title Sequence Diagram - Search Files By Keyword Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "SearchFilesByKeywordQuery" as Query
+participant "SearchFilesByKeywordService" as Service
+participant "FilePersistencePort" as FilePort
+
+Client -> Controller: GET /api/v1/files/search/{keyword}
+activate Controller
+
+Controller -> Query **: new(ownerId, keyword)
+activate Query
+Query --> Controller: query
+deactivate Query
+
+Controller -> Service: execute(query)
+activate Service
+
+Service -> Query: validate()
+activate Query
+Query --> Service
+deactivate Query
+
+Service -> FilePort: findFilesLikeName(ownerId, keyword)
+activate FilePort
+FilePort --> Service: List<File>
+deactivate FilePort
+
+Service --> Controller: List<File>
+deactivate Service
+
+Controller --> Client: 200 OK\n(GetFilesResponse)
+deactivate Controller
+@enduml

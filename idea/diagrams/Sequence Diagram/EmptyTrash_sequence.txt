@@ -1,0 +1,59 @@
+@startuml
+title Sequence Diagram - Empty Trash Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "EmptyTrashCommand" as Command
+participant "EmptyTrashService" as Service
+participant "FilePersistencePort" as FilePort
+participant "StoragePort" as StoragePort
+participant "FileAndUserTransactionPort" as TransactionPort
+
+Client -> Controller: POST /api/v1/files/empty/trash
+activate Controller
+
+Controller -> Command **: new(ownerId)
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+Service -> FilePort: findAllTrashFilesByOwnerId(ownerId)
+activate FilePort
+FilePort --> Service: List<File> (allTrashFilesToDelete)
+deactivate FilePort
+
+alt files found
+    Service -> FilePort: countByStoragePaths(storagePaths)
+    activate FilePort
+    FilePort --> Service: Map<String, Long> (storagePathCounts)
+    deactivate FilePort
+    
+    loop for each file in allTrashFilesToDelete
+        alt isFile && referenceCount <= 1
+            Service -> StoragePort: delete(storagePath)
+            activate StoragePort
+            StoragePort --> Service: void
+            deactivate StoragePort
+        end
+    end
+    
+    Service -> TransactionPort: deleteFilesAndRefundQuotaStorage(...)
+    activate TransactionPort
+    TransactionPort --> Service: void
+    deactivate TransactionPort
+end
+
+Service --> Controller: EmptyTrashResult
+deactivate Service
+
+Controller --> Client: 200 OK\n(OnlyMessageResponse)
+deactivate Controller
+@enduml

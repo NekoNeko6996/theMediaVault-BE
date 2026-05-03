@@ -1,0 +1,46 @@
+@startuml
+title Sequence Diagram - Get Download Url Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "GetDowloadUrlQuery" as Query
+participant "GetDownloadUrlService" as Service
+participant "FilePersistencePort" as FilePort
+participant "StoragePort" as StoragePort
+
+Client -> Controller: GET /api/v1/files/download/{fileId}?type=...
+activate Controller
+
+Controller -> Query **: new(ownerId, fileId, type)
+activate Query
+Query --> Controller: query
+deactivate Query
+
+Controller -> Service: execute(query)
+activate Service
+
+Service -> Query: validate()
+activate Query
+Query --> Service
+deactivate Query
+
+Service -> FilePort: findByIdAndOwnerId(fileId, ownerId)
+activate FilePort
+FilePort --> Service: Optional<File> (targetDownload)
+deactivate FilePort
+
+alt File not found
+    Service -[#red]> Controller: throw DomainException
+else File found
+    Service -> StoragePort: getDownloadUrl(storagePath, type)
+    activate StoragePort
+    StoragePort --> Service: String (url)
+    deactivate StoragePort
+    
+    Service --> Controller: GetDownLoadUrlResult
+end
+deactivate Service
+
+Controller --> Client: 200 OK\n(GetDownLoadUrlResult)
+deactivate Controller
+@enduml

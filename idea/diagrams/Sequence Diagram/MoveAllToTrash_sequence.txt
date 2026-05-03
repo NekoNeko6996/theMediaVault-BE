@@ -1,0 +1,45 @@
+@startuml
+title Sequence Diagram - Move All To Trash Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "MoveAllToTrashCommand" as Command
+participant "MoveToTrashService" as Service
+participant "FilePersistencePort" as FilePort
+
+Client -> Controller: POST /api/v1/files/drop\n(MoveToTrashRequest)
+activate Controller
+
+Controller -> Command **: builder()...build()
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+loop for each fileId in command.getFileIds()
+    Service -> FilePort: isOwner(fileId, ownerId)
+    activate FilePort
+    FilePort --> Service: boolean (isOwner)
+    deactivate FilePort
+end
+
+alt validFileIds is not empty
+    Service -> FilePort: moveAllToTrash(validFileIds)
+    activate FilePort
+    FilePort --> Service: void
+    deactivate FilePort
+end
+
+Service --> Controller: FailedMoveAllToTrashResult
+deactivate Service
+
+Controller --> Client: 200 OK\n(FailedMoveAllToTrashResult)
+deactivate Controller
+@enduml

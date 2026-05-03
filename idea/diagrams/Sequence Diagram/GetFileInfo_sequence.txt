@@ -1,0 +1,40 @@
+@startuml
+title Sequence Diagram - Get File Info Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "GetFileInfoQuery" as Query
+participant "GetFileInfoService" as Service
+participant "FilePersistencePort" as FilePort
+
+Client -> Controller: GET /api/v1/files/get/info/{fileId}
+activate Controller
+
+Controller -> Query **: new(ownerId, fileId)
+activate Query
+Query --> Controller: query
+deactivate Query
+
+Controller -> Service: execute(query)
+activate Service
+
+Service -> Query: validate()
+activate Query
+Query --> Service
+deactivate Query
+
+Service -> FilePort: findByIdAndOwnerId(fileId, ownerId)
+activate FilePort
+FilePort --> Service: Optional<File>
+deactivate FilePort
+
+alt File not found
+    Service -[#red]> Controller: throw DomainException
+else File found
+    Service --> Controller: File
+end
+deactivate Service
+
+Controller --> Client: 200 OK\n(GetFileResponse)
+deactivate Controller
+@enduml

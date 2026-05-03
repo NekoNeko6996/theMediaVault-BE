@@ -1,0 +1,72 @@
+@startuml
+title Sequence Diagram - Move Files Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "MoveFilesCommand" as Command
+participant "MoveFilesService" as Service
+participant "FilePersistencePort" as FilePort
+
+Client -> Controller: POST /api/v1/files/move\n(MoveFilesRequest)
+activate Controller
+
+Controller -> Command **: new(ownerId, targetParentId, filesTobeMove)
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> Command: validate()
+activate Command
+Command --> Service
+deactivate Command
+
+alt targetParentId != null
+    Service -> FilePort: findById(targetParentId)
+    activate FilePort
+    FilePort --> Service: Optional<File> (targetParent)
+    deactivate FilePort
+    
+    Service -> FilePort: findAllChildIds(filesTobeMove)
+    activate FilePort
+    FilePort --> Service: List<String> (allDescendantIds)
+    deactivate FilePort
+end
+
+Service -> FilePort: findByOwnerAndFileIds(ownerId, filesTobeMove)
+activate FilePort
+FilePort --> Service: List<File> (filesToMove)
+deactivate FilePort
+
+Service -> FilePort: findByParentIdAndOwnerId(targetParentId, ownerId)
+activate FilePort
+FilePort --> Service: List<File> (filesInNewDir)
+deactivate FilePort
+
+loop for each fileToMove
+    alt existingNamesInTarget contains file name
+        Service -> Service: generateUniqueName()
+        Service -> FilePort: renameAndMove(id, newName, targetParentId)
+        activate FilePort
+        FilePort --> Service: void
+        deactivate FilePort
+    else
+        Service -> Service: add to simpleMoveIds
+    end
+end
+
+alt simpleMoveIds not empty
+    Service -> FilePort: moveFilesToNewDir(simpleMoveIds, targetParentId)
+    activate FilePort
+    FilePort --> Service: void
+    deactivate FilePort
+end
+
+Service --> Controller: FailedMoveFilesResult
+deactivate Service
+
+Controller --> Client: 200 OK\n(FailedMoveFilesResult)
+deactivate Controller
+@enduml

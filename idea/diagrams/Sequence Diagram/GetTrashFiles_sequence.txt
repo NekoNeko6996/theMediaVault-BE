@@ -1,0 +1,36 @@
+@startuml
+title Sequence Diagram - Get Trash Files Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "GetTrashFilesQuery" as Query
+participant "GetTrashFilesService" as Service
+participant "FilePersistencePort" as FilePort
+
+Client -> Controller: GET /api/v1/files/get/trash
+activate Controller
+
+Controller -> Query **: new(ownerId)
+activate Query
+Query --> Controller: query
+deactivate Query
+
+Controller -> Service: execute(query)
+activate Service
+
+Service -> Query: validate()
+activate Query
+Query --> Service
+deactivate Query
+
+Service -> FilePort: findAllTrashFilesByOwnerId(ownerId)
+activate FilePort
+FilePort --> Service: List<File>
+deactivate FilePort
+
+Service --> Controller: List<File>
+deactivate Service
+
+Controller --> Client: 200 OK\n(GetFilesResponse)
+deactivate Controller
+@enduml

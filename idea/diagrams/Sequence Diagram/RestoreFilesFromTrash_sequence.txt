@@ -1,0 +1,56 @@
+@startuml
+title Sequence Diagram - Restore Files From Trash Use Case
+
+actor Client
+participant "FileController" as Controller
+participant "RestoreFilesFromTrashCommand" as Command
+participant "RestoreFilesFromTrashService" as Service
+participant "FilePersistencePort" as FilePort
+
+Client -> Controller: POST /api/v1/files/restore\n(RestoreFilesFromTrashRequest)
+activate Controller
+
+Controller -> Command **: new(ownerId, fileIds)
+activate Command
+Command --> Controller: command
+deactivate Command
+
+Controller -> Service: execute(command)
+activate Service
+
+Service -> FilePort: findByOwnerAndFileIds(ownerId, fileIds)
+activate FilePort
+FilePort --> Service: List<File> (explicitItems)
+deactivate FilePort
+
+loop for each item
+    alt parent isTrashed
+        Service -> Service: idToMoveToRoot.add(item.getId())
+    end
+end
+
+alt idToMoveToRoot is not empty
+    Service -> FilePort: moveFilesToNewDir(idToMoveToRoot, null)
+    activate FilePort
+    FilePort --> Service: void
+    deactivate FilePort
+end
+
+Service -> FilePort: findAllChildIds(fileIds)
+activate FilePort
+FilePort --> Service: List<String> (allIdsToRestore)
+deactivate FilePort
+
+alt allIdsToRestore is not empty
+    Service -> FilePort: restoreAllFromTrash(allIdsToRestore)
+    activate FilePort
+    FilePort --> Service: void
+    deactivate FilePort
+end
+
+Service --> Controller: void
+deactivate Service
+
+Controller --> Client: 200 OK\n(OnlyMessageResponse)
+deactivate Controller
+@enduml
