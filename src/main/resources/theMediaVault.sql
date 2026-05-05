@@ -70,11 +70,9 @@ CREATE TABLE `files` (
 
 
 -- Bảng `file_shares`: Quản lý quyền chia sẻ (Sharing & Permissions)
-CREATE TABLE `file_shares` (
+CREATE TABLE `shares` (
     `id` VARCHAR(36) NOT NULL,
-    `file_id` VARCHAR(36) NOT NULL,
     `shared_by` VARCHAR(36) NOT NULL,
-    `shared_with` VARCHAR(36) DEFAULT NULL, -- ID người được chia sẻ (NULL nếu chia sẻ public bằng link)
     
     -- Quyền hạn & Token
     `permission` ENUM('VIEW', 'COMMENT', 'EDIT') NOT NULL DEFAULT 'VIEW',
@@ -88,8 +86,28 @@ CREATE TABLE `file_shares` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_public_token` (`public_token`),
     INDEX `idx_file_id` (`file_id`),
-    INDEX `idx_shared_with` (`shared_with`),
-    CONSTRAINT `fk_share_file` FOREIGN KEY (`file_id`) REFERENCES `files`(`id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_share_by` FOREIGN KEY (`shared_by`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_share_with` FOREIGN KEY (`shared_with`) REFERENCES `users`(`id`) ON DELETE CASCADE
+    INDEX `idx_shared_by` (`shared_by`)
+    CONSTRAINT `fk_share_by` FOREIGN KEY (`shared_by`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng `share_items`: Liên kết 1 Share -> Nhiều File
+CREATE TABLE `share_items` (
+    `share_id` VARCHAR(36) NOT NULL,
+    `file_id` VARCHAR(36) NOT NULL,
+    
+    PRIMARY KEY (`share_id`, `file_id`),
+    INDEX `idx_file_id` (`file_id`),
+    CONSTRAINT `fk_si_share` FOREIGN KEY (`share_id`) REFERENCES `shares`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_si_file` FOREIGN KEY (`file_id`) REFERENCES `files`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng `share_recipients`: Liên kết 1 Share -> Nhiều User (Bỏ qua bảng này nếu chỉ dùng Public Link)
+CREATE TABLE `share_recipients` (
+    `share_id` VARCHAR(36) NOT NULL,
+    `user_id` VARCHAR(36) NOT NULL,
+    
+    PRIMARY KEY (`share_id`, `user_id`),
+    INDEX `idx_user_id` (`user_id`),
+    CONSTRAINT `fk_sr_share` FOREIGN KEY (`share_id`) REFERENCES `shares`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_sr_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci

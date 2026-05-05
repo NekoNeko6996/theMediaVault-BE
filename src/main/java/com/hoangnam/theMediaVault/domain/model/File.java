@@ -1,6 +1,5 @@
 package com.hoangnam.theMediaVault.domain.model;
 
-import com.hoangnam.theMediaVault.domain.exception.DomainException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -30,47 +29,6 @@ public class File {
         return this.isTrashed && trashedAt != null;
     }
 
-    public File toggleStarred() {
-        return this.toBuilder().isStarred(!this.isStarred).build();
-    }
-
-    public File throwToTrash() {
-        if (this.isTrashed) {
-            throw new DomainException(String.format("The file %s is already in trash.", this.name));
-        }
-
-        // quăng nó vào thùng rác
-        return this.toBuilder()
-                .isTrashed(true)
-                .trashedAt(LocalDateTime.now())
-                .build();
-    }
-
-    public File takenFormTrash() {
-        if (!this.isTrashed) {
-            throw new DomainException(String.format("The file %s isn't in the trash can.", this.name));
-        }
-
-        // lấy nó lại từ thùng rác
-        return this.toBuilder()
-                .isTrashed(false)
-                .build();
-    }
-
-    public File rename(String newName) {
-        return this.toBuilder()
-                .name(newName)
-                .updateAt(LocalDateTime.now())
-                .build();
-    }
-
-    public File moveTo(File newParent) {
-        return this.toBuilder()
-                .parent(newParent)
-                .updateAt(LocalDateTime.now())
-                .build();
-    }
-
     public boolean isFolder() {
         return this.itemType == FileItemType.FOLDER;
     }
@@ -78,9 +36,19 @@ public class File {
     public boolean isFile() {
         return this.itemType == FileItemType.FILE;
     }
-    
+
     public String getRootDir() {
         return "user_" + this.owner.getId() + "/";
+    }
+
+    public File duplicate(String newId, String newUniqueName, File targetParent) {
+        return this.toBuilder()
+                .id(newId)
+                .name(newUniqueName)
+                .parent(targetParent)
+                .createAt(LocalDateTime.now())
+                .updateAt(LocalDateTime.now())
+                .build();
     }
 
     public static File createFile(
@@ -109,7 +77,7 @@ public class File {
                 .updateAt(LocalDateTime.now())
                 .build();
     }
-    
+
     public static File createFile(
             String id,
             User owner,

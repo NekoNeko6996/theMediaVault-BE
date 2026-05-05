@@ -80,14 +80,7 @@ public class DuplicateFilesService implements DuplicateFilesUseCase {
             sizeDelta += file.getSizeBytes();
 
             // Sinh bản sao
-            File newCopiedFile = file.toBuilder()
-                    .id(UUID.randomUUID().toString())
-                    .name(newUniqueName)
-                    .parent(targetParent)
-                    .createAt(LocalDateTime.now())
-                    .updateAt(LocalDateTime.now())
-                    .build();
-
+            File newCopiedFile = file.duplicate(UUID.randomUUID().toString(), newUniqueName, targetParent);
             filesToDuplicate.add(newCopiedFile);
         }
         
