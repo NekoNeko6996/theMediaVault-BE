@@ -71,6 +71,8 @@ import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.Get
 import com.hoangnam.theMediaVault.infrastructure.adapter.in.web.dto.response.OnlyMessageResponse;
 import com.hoangnam.theMediaVault.infrastructure.service.JWTService;
 import io.jsonwebtoken.JwtException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -198,9 +200,14 @@ public class FileController {
         return ResponseEntity.ok(result);
     }
 
-    // parentId = root thì sẽ lấy ở root
+    @Operation(
+            summary = "Get all file in a folder",
+            description = "Get list of file in a target folder, if you want to get files in a root folder, use 'root' value"
+    )
     @GetMapping("/get/files/{parentId}")
-    public ResponseEntity<?> getFiles(@AuthenticationPrincipal CustomUserDetail user, @PathVariable("parentId") String parentId) {
+    public ResponseEntity<?> getFiles(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetail user, 
+            @Parameter(description = "ID of parent folder, use 'root' to get all file in root folder.") @PathVariable("parentId") String parentId) {
         parentId = "root".equals(parentId)? "" : parentId;
         List<File> files = getFilesUseCase.execute(new GetFilesQuery(user.getDomainUser().getId(), parentId));
 
